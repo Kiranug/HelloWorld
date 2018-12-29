@@ -1,0 +1,77 @@
+1. SmartComponents\CommonClasses
+2. Shared_Common\Logger
+3. SmartComponents\IntermittentDemand
+4. SmartComponents\Forecasting
+4.Shared_Common\SSTimeManager
+5. FileImport\Fileimport
+7. Shared_Common\SmartSeries
+8.SmartComponents\ForecastingOrchestrator
+9 SIOsuite
+
+\\WIN-BGABSLI21NN\FileImport\Fileimport
+
+$(SystemDrive)\Builds\$(BuildAgentId)\$(BuildDefinitionPath)
+
+1. SmartComponents\CommonClasses
+2. Shared_Common\Logger
+
+
+
+
+Restoring NuGet packages...
+To prevent NuGet from restoring packages during build, open the Visual Studio Options dialog, click on the Package Manager node and uncheck 'Allow NuGet to download missing packages during build.'
+1>------ Rebuild All started: Project: DTO, Configuration: Release Any CPU ------
+2>------ Rebuild All started: Project: SIO.Components.Domain, Configuration: Release Any CPU ------
+3>------ Rebuild All started: Project: SIO.Components.Context, Configuration: Release Any CPU ------
+4>------ Rebuild All started: Project: SIO.Components.Transaction, Configuration: Release Any CPU ------
+1>  DTO -> E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\DTO\bin\Release\DataTransfer.dll
+2>  SIO.Components.Domain -> E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Components.Domain\bin\Release\SIO.Components.Domain.dll
+5>------ Rebuild All started: Project: BusinessLogic, Configuration: Release Any CPU ------
+3>  SIO.Components.Context -> E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Components.Context\bin\Release\SIO.Components.Context.dll
+6>------ Rebuild All started: Project: SIO.Components.Repository, Configuration: Release Any CPU ------
+7>------ Rebuild All started: Project: SIO.Components.Utilities, Configuration: Release Any CPU ------
+4>  SIO.Components.Transaction -> E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Components.Transaction\bin\Release\SIO.Components.Transaction.dll
+5>C:\Program Files (x86)\MSBuild\12.0\bin\Microsoft.Common.CurrentVersion.targets(1635,5): warning MSB3245: Could not resolve this reference. Could not locate the assembly "SmartComponents.ForecastingOrchestrator". Check to make sure the assembly exists on disk. If this reference is required by your code, you may get compilation errors.
+5>E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\BusinessLogic\BllAgent.cs(4,23,4,46): error CS0234: The type or namespace name 'ForecastingOrchestrator' does not exist in the namespace 'SmartComponents' (are you missing an assembly reference?)
+6>  SIO.Components.Repository -> E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Components.Repository\bin\Release\SIO.Components.Repository.dll
+8>------ Rebuild All started: Project: Resources, Configuration: Release Any CPU ------
+9>------ Rebuild All started: Project: SIO.Components.Context.Impl, Configuration: Release Any CPU ------
+7>  SIO.Components.Utilities -> E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Components.Utilities\bin\Release\SIO.Components.Utilities.dll
+10>------ Rebuild All started: Project: SIO.Components.Repository.Nhibernate, Configuration: Release Any CPU ------
+11>------ Rebuild All started: Project: SIO.Entities, Configuration: Release Any CPU ------
+8>  Resources -> E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\Resources\bin\Release\Resources.dll
+12>------ Rebuild All started: Project: SIO.Services, Configuration: Release Any CPU ------
+9>  SIO.Components.Context.Impl -> E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Components.Context.Impl\bin\Release\SIO.Components.Context.Impl.dll
+12>CSC : error CS0006: Metadata file 'E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\BusinessLogic\bin\Release\BusinessLogic.dll' could not be found
+13>------ Rebuild All started: Project: SIO.Components.Transaction.Impl, Configuration: Release Any CPU ------
+14>------ Rebuild All started: Project: SIO.Components.Logging, Configuration: Release Any CPU ------
+13>  SIO.Components.Transaction.Impl -> E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Components.Transaction.Impl\bin\Release\SIO.Components.Transaction.Impl.dll
+10>  SIO.Components.Repository.Nhibernate -> E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Components.Repository.Nhibernate\bin\Release\SIO.Components.Repository.Nhibernate.dll
+15>------ Rebuild All started: Project: SIO.Tests, Configuration: Release Any CPU ------
+14>  SIO.Components.Logging -> E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Components.Logging\bin\Release\SIO.Components.Logging.dll
+11>  SIO.Entities -> E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Entities\bin\Release\SIO.Entities.dll
+16>------ Rebuild All started: Project: SIO.Components.Logging.Impl, Configuration: Release Any CPU ------
+17>------ Rebuild All started: Project: SIO.Services.Impl, Configuration: Release Any CPU ------
+18>------ Rebuild All started: Project: SIO.FileImport, Configuration: Release Any CPU ------
+15>CSC : error CS0006: Metadata file 'E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\BusinessLogic\bin\Release\BusinessLogic.dll' could not be found
+16>  SIO.Components.Logging.Impl -> E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Components.Logging.Impl\bin\Release\SIO.Components.Logging.Impl.dll
+17>CSC : error CS0006: Metadata file 'E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\BusinessLogic\bin\Release\BusinessLogic.dll' could not be found
+17>CSC : error CS0006: Metadata file 'E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Services\bin\Release\SIO.Services.dll' could not be found
+18>  SIO.FileImport -> E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.FileImport\bin\Release\SIO.FileImport.dll
+19>------ Rebuild All started: Project: SIO.BenchmarkCreator, Configuration: Release Any CPU ------
+20>------ Rebuild All started: Project: SIO.Web, Configuration: Release Any CPU ------
+19>CSC : error CS0006: Metadata file 'E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\BusinessLogic\bin\Release\BusinessLogic.dll' could not be found
+19>CSC : error CS0006: Metadata file 'E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Services\bin\Release\SIO.Services.dll' could not be found
+19>CSC : error CS0006: Metadata file 'E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Services.Impl\bin\Release\SIO.Services.Impl.dll' could not be found
+19>CSC : error CS0006: Metadata file 'E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Tests\bin\Release\SIO.Tests.dll' could not be found
+20>CSC : error CS0006: Metadata file 'E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Services\bin\Release\SIO.Services.dll' could not be found
+20>  . : File E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Web\deploy.ps1 cannot be loaded because 
+20>  running scripts is disabled on this system. For more information, see about_Execution_Policies at 
+20>  http://go.microsoft.com/fwlink/?LinkID=135170.
+20>  At line:1 char:2
+20>  + .'E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Web\deploy.ps1' -targetFolder:'E: ...
+20>  +  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+20>      + CategoryInfo          : SecurityError: (:) [], PSSecurityException
+20>      + FullyQualifiedErrorId : UnauthorizedAccess
+20>C:\Program Files (x86)\MSBuild\12.0\bin\Microsoft.Common.CurrentVersion.targets(4429,5): error MSB3073: The command "powershell.exe -NoLogo -NonInteractive -Command .'E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Web\deploy.ps1' -targetFolder:'E:\SmartCorp1\SIOSuite\SIO\CurrentBranch\SIO.Web\bin\' -buildName:'Release'" exited with code 1.
+========== Rebuild All: 14 succeeded, 6 failed, 0 skipped ==========

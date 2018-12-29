@@ -1,0 +1,25 @@
+NEW_Acutech_Prod_Deploy  need to add changes
+
+Below configuration in build.bat
+C:\setups\s3.exe put acutechprod/Acuity-Builds/PROD/%BUILDVERSION%/ C:\Windows\Temp\AcuityProdBuild.7z /nogui
+
+below chages for deploy.bat in remote machine and also need to set s3 auth for prod
+
+C:\setups\s3.exe get acutechprod/Acuity-Builds/PROD/%BUILDVERSION%/AcuityProdBuild.7z C:\Windows\Temp\AcuityProdBuild.7z /nogui
+
+
+
+
+
+Offline prod signed..Need to change below command in dev jenkins job configuration
+
+C:\setups\s3.exe put acutechprod/Offline-Builds/Prod/%BUILD_NUMBER%/ C:\AcuTechProdDeploy\OfflineProdBuild.7z
+
+
+solr_indexer_prod
+
+C:\setups\s3.exe put acutechprod/Solr-Indexer-Builds/Prod/%BUILDVERSION%/ C:\Windows\Temp\SolrIndexer.7z /nogui    on  prod jenkins machine
+
+below on remote solr_prod_deploy.bat file and also need to set s3 auth for prod
+
+C:\setups\s3.exe get acutechprod/Solr-Indexer-Builds/Prod/%BUILDVERSION%/SolrIndexer.7z C:\Windows\Temp\SolrIndexer.7z /nogui  

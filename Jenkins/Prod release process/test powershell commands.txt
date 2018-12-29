@@ -1,0 +1,2 @@
+ Invoke-Command -ComputerName <Computername> -credential <credentials> -ScriptBlock $script -Args "D:\sitesetup.ps1"
+ Invoke-Command {mkdir} -ComputerName 10.1.0.221 -Credential io=gXRSW!U - 

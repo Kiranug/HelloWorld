@@ -1,0 +1,111 @@
+a0) merge branch 
+1) db_publish
+2) production web build
+3) wpf build
+4) solr indexer build
+
+
+NEW_Acutech_Prod_Deploy
+solr_indexer_prod
+Prod-offline-Signed
+
+Production Push Steps
+
+CleanUp and stash save process on the local repository
+1) Create a git tag for Production branch, Last tag acuity 2.1 | if any issue | create it using git bash :- git tag acuity2.1 | git push origin acuity2.1
+	
+2) Merge staging branch into prodution manuallyh
+Merge-branch:remote/origin/staging  
+if conflict occured : try to resolve by clicking resolve button  * mine is production & theirs is staging branch
+Changes need to commit-ok-push -local production to remote production
+confirm by viewing source -production branch -commits
+
+3) Stop IIS service on all prod instance
+note changes will come in following folder after build performed c:\inetpub\wwwroot\actech\acuity
+acuityprodbuild.gz file also get replaced in temp folder
+
+3.1) Delete zip file from all temp folder...
+
+4) Start production build 
+access production Jenkings 	need to make sure DB puclish happend properly
+click on "NEW_Acutech_Prod_Deploy" - Click on build - job and check DB publish by serching "sqlproj" with  "0 Error(s)" or search "Building projects"
+
+
+5) restart all IIS services restart web on web and service on services	
+
+6) check load balancer and we use acutech-acuity.com only for web
+
+7) build  "Prod-offline-Signed" job from dev jenkins with 2.0.0.9 version
+check and download offline app by installing and login 
+email- 	tl@pro.com
+Password - qa@123
+
+8)access solr-beta by using http://52.91.117.139:8983/solr and also take remote and stop solr-indexer scheduler task.
+open c:\  and delete solr-indexer.zip and 7z file fi exist 
+disable solr-indexer scheduler first
+create solr indexer folder backup
+
+finally go run "solr-indexer_prod" job on jenkins if jenkins fail you need to run script manually and make sure you use proper  build no. which has failed.
+and manually run if
+we need to do force index 
+start solr-indexer task scheduler again and have to make sure force indexing
+C:\solr_indexer\Release\SolrIndexer.exe.config
+<add key="ForceIndexing" value="False"/>
+
+
+9) access solr_indexer and disable tast schedular job.
+
+backup everything from 
+/mnt/crawler_backup/solr_data/data/Acutech_question
+/mnt/crawler_backup/solr_data/data/Acutech_element
+backup conf,data and core.properties folder  
+
+Below command will clear question core data
+http://52.91.117.139:8983/solr/Acutech_question/update?stream.body=%3Cdelete%3E%3Cquery%3E*:*%3C/query%3E%3C/delete%3E&commit=true&wt=json 
+Below command will clear element core data
+http://52.91.117.139:8983/solr/Acutech_element/update?stream.body=%3Cdelete%3E%3Cquery%3E*:*%3C/query%3E%3C/delete%3E&commit=true&wt=json
+
+Service Solr status
+cd /home/ec2-user/repo/acuity 
+git pull on above path from prod branch
+then 
+cd /utils
+schema_element.xml  copy /mnt/crawler_backup/solr_data/data/Acutech_element/conf then rename it to schema.xml
+schema_question.xml copy /mnt/crawler_backup/solr_data/data/Acutech_question/conf then rename it to schema.xml
+cp schema_element.xml /mnt/crawler_backup/solr_data/data/Acutech_element/conf/
+cp schema_question.xml /mnt/crawler_backup/solr_data/data/Acutech_question/conf/
+
+run service solr stop 
+run service solr start
+
+then access http://52.91.117.139:8983/solr/  
+
+then access solr-indexer and open C:\solr_indexer\Release\SolrIndexer.exe.config 
+Change force indexing value to true
+
+appSettings>
+		<add key="NHMappingFilesPath" value="c:\solr_indexer\Mappings" />
+		<add key="SolrBaseUrl" value="http://10.1.0.222:8983/solr"/>
+		<add key="UserName" value="GAdmin"/>
+		<add key="ForceIndexing" value="False"/>
+		<add key="FullIndexingTimeSpan" value="8"/>
+	</appSettings>
+
+enable schedular job and run
+
+after 5 mins of schedular job access below link and check the status
+//52.91.117.139:8983/solr/
+select core selector
+element core and question core 
+verify data is updates.
+
+Change force indexing value to true to false 
+
+	
+	
+
+
+
+ 
+
+

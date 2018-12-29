@@ -1,0 +1,25 @@
+1. Delete downloaded zip file and folder befour running script
+
+1. Create bit bucket repository named kiran-test.
+2. Create Branch named Pune 
+3. Push city folder (four files) in pune branch
+4. configure kiran-test repository & Pune branch in jenkins.
+5. compress test folder from repository and upload to s3 as per build no.
+6. 
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------
+Check following builds
+1. dbpublish.
+2. webapp.
+3. services.
+4. offline app.
+5. solr indexer.
+
+
+1. build command line
+2. run build in iis or task schedular
+	

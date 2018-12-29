@@ -1,0 +1,15 @@
+Need to understand
+Web
+services
+wpf	
+solr indexer
+activity
+solr	
+sql server
+
+what port 
+external services 
+smtp
+domain
+external certificate
+s3

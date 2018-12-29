@@ -1,0 +1,174 @@
+"NEW_Acutech_Prod_Deploy"  Jenkins job work
+
+1.Pull production git repository into jenkins.
+2.Then it will run build_deploy.bat file (deploy/prod_new/build_deploy.bat %BUILD_NUMBER%)which is available on jenkins machine.
+3. In build_deploy.bat we have configured following steps to run.
+4. build_deploy.bat call following configuration
+@echo off
+
+SET CURRTIME=%TIME::=%
+SET CURRTIME=%CURRTIME:~0,6%
+if "%CURRTIME:~0,1%" == " " set CURRTIME=0%CURRTIME:~1,5%
+SET BUILDVERSION=%DATE:~-4%%DATE:~4,2%%DATE:~7,2%%CURRTIME%
+
+IF NOT "%1"=="" (
+  SET BUILDVERSION=%1
+)
+
+CALL deploy/prod_new/dbpublish.bat
+
+CALL deploy/prod_new/build.bat %BUILDVERSION%
+
+CALL deploy/prod_new/remote_deploy.bat %BUILDVERSION%
+
+5. first it would call dbpublish.bat and in dbpublish.bat we Build and Publish DB project to RDS Database
+In dbpublish.bat :- C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe Server/AcuTech.Acuity.Database/AcuTech.Acuity.Database.sqlproj /t:Clean,Build,Publish /p:Configuration=Release /p:VisualStudioVersion=11.0 /p:SqlPublishProfilePath=C:\AcuTechProdDeploy\AcuTech.AcuTechDevDB.publish.xml
+ 
+6. then it would call build.bat file
+In build.bat script
+
+@echo off
+
+SET CURRTIME=%TIME::=%
+SET CURRTIME=%CURRTIME:~0,6%
+if "%CURRTIME:~0,1%" == " " set CURRTIME=0%CURRTIME:~1,5%
+SET BUILDVERSION=%DATE:~-4%%DATE:~4,2%%DATE:~7,2%%CURRTIME%
+
+IF NOT "%1"=="" (
+  SET BUILDVERSION=%1
+)
+
+IF EXIST C:\inetpub\wwwroot\AcuTech-PROD RMDIR C:\inetpub\wwwroot\AcuTech-PROD /s /q
+
+echo !!!!! Fetching the required libs !!!!!!!!!!
+C:\setups\nuget.exe restore Server/AcuTech.Web.sln
+C:\setups\nuget.exe restore Server/AcuTech.Acuity.Service.sln
+
+echo !!!!!! Building projects !!!!!!!!!!!
+C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe Server/AcuTech.Acuity.APIService.Host/AcuTech.Acuity.APIService.Host.csproj /t:Clean,Build /p:Configuration=Release /p:VisualStudioVersion=12.0 /p:DeployOnBuild=true /p:PublishProfile=PROD_S3_AuditService
+
+C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe Server/AcuTech.Web/AcuTech.Web.csproj /t:Clean,Build /p:Configuration=Release /p:VisualStudioVersion=12.0 /p:DeployOnBuild=true /p:PublishProfile=PROD_S3_Web
+
+XCOPY /E /I Server\Mappings C:\inetpub\wwwroot\AcuTech-PROD\Acuity\services\Mappings
+
+MKDIR C:\inetpub\wwwroot\AcuTech-PROD\Acuity\web\CompanyImages
+MKDIR C:\inetpub\wwwroot\AcuTech-PROD\Acuity\web\ProfileImages
+MKDIR C:\inetpub\wwwroot\AcuTech-PROD\Acuity\web\Logs
+MKDIR C:\inetpub\wwwroot\AcuTech-PROD\Acuity\services\Logs
+
+echo !!!!!!!!! Copying Prod Config files as well !!!!!!!!!!!!!
+COPY /Y Server\AcuTech.Acuity.APIService.Host\Web.Prod.config C:\inetpub\wwwroot\AcuTech-PROD\Acuity\services\
+COPY /Y Server\AcuTech.Web\Web.Prod.config C:\inetpub\wwwroot\AcuTech-PROD\Acuity\web\
+
+DEL /F /Q C:\Windows\Temp\AcuityProdBuild.7z
+echo !!!!!!!! Creating build archive to upload to S3 !!!!!!!!
+"C:\Program Files\7-Zip\7z.exe" a C:\Windows\Temp\AcuityProdBuild.7z C:\inetpub\wwwroot\AcuTech-PROD\Acuity
+
+
+echo !!!!!!!! Uploading build archive to S3:acutech/Acuity-Builds/PROD/%BUILDVERSION%/AcuityProdBuild.7z !!!!!!!!
+C:\setups\s3.exe put acutech/Acuity-Builds/PROD/%BUILDVERSION%/ C:\Windows\Temp\AcuityProdBuild.7z /nogui
+
+7. Then it would run remote_build.bat script
+in remote_build.bat
+
+@echo off
+
+REM :: TO BE INSTALLED on Build SERVER (along with C:\AcuTechBetaDeploy\remote_stg_deploy.ps1)
+
+IF "%1"=="" (
+  echo ERROR: Build version not passed
+  exit /b %errorlevel%
+)
+
+SET BUILDVERSION=%1
+
+echo "going to run Invoke-Command for webapp1"
+%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File C:\AcuTechProdDeploy\remote_deploy-new-prod.ps1 "ip-10-1-0-241.ec2.internal" "Administrator" "C:\Users\Administrator\SecureString\webapp-stg-passwd.txt" %BUILDVERSION%
+
+echo "going to run Invoke-Command for webapp2"
+%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File C:\AcuTechProdDeploy\remote_deploy-new-prod.ps1 "ip-10-1-0-221.ec2.internal" "Administrator" "C:\Users\Administrator\SecureString\webapp-stg-passwd.txt" %BUILDVERSION%
+
+echo "going to run Invoke-Command for services1"
+%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File C:\AcuTechProdDeploy\remote_deploy-new-prod.ps1 "ip-10-1-0-239.ec2.internal" "Administrator" "C:\Users\Administrator\SecureString\webapp-stg-passwd.txt" %BUILDVERSION%
+
+echo "going to run Invoke-Command for services2"
+%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File C:\AcuTechProdDeploy\remote_deploy-new-prod.ps1 "ip-10-1-0-251.ec2.internal" "Administrator" "C:\Users\Administrator\SecureString\webapp-stg-passwd.txt" %BUILDVERSION%
+
+8.Then it would run powershell "remote_deploy-new-prod.ps1" script and it will invole C:\AcuTechDeploy\deploy.bat (deploy.bat) on remote computers.
+
+in powershell we configured below configuration.
+
+[CmdletBinding()]
+Param(
+   [Parameter(Mandatory=$True)]
+   [string]$Hostname,
+   [string]$Username,
+   [string]$Password,
+   [string]$BuildVersion
+)
+
+$opt = New-PSSessionOption -SkipCACheck
+
+echo "going to run Invoke-Command for $Hostname"
+
+$winrmuri = "https://" + $Hostname + ":5986/"
+$SecurePassword = Get-Content $Password | ConvertTo-SecureString
+$cred = New-Object PSCredential -ArgumentList $Username, $SecurePassword
+Invoke-Command -SessionOption $opt -ConnectionUri $winrmuri -Credential $cred -ScriptBlock { 
+  Param($BuildVersion) & C:\AcuTechDeploy\deploy.bat "$BuildVersion"
+} -ArgumentList $BuildVersion
+
+9. and in deploy.bat on remote machine.
+
+@echo off
+
+REM :: TO BE INSTALLED on Prod SERVERS
+REM :: will be remotely invoked from build machine
+
+IF "%1"=="" (
+  echo ERROR: Build version not passed
+  exit /b %errorlevel%
+)
+
+SET BUILDVERSION=%1
+
+DEL /F /Q C:\Windows\Temp\AcuityProdBuild.7z
+echo !!!!!!!! Downloading build archive from S3:acutech/Acuity-Builds/PROD/%BUILDVERSION%/AcuityProdBuild.7z !!!!!!!!
+C:\setups\s3.exe get acutech/Acuity-Builds/PROD/%BUILDVERSION%/AcuityProdBuild.7z C:\Windows\Temp\AcuityProdBuild.7z /nogui
+
+echo !!!!!!! Taking Build backup !!!!!!!!!!
+IF EXIST C:\inetpub\wwwroot\AcuTech\Acuity.3 RMDIR C:\inetpub\wwwroot\AcuTech\Acuity.3 /s /q
+IF EXIST C:\inetpub\wwwroot\AcuTech\Acuity.2 REN C:\inetpub\wwwroot\AcuTech\Acuity.2 Acuity.3
+IF EXIST C:\inetpub\wwwroot\AcuTech\Acuity.1 REN C:\inetpub\wwwroot\AcuTech\Acuity.1 Acuity.2
+REM XCOPY /s /i C:\inetpub\wwwroot\AcuTech\Acuity C:\inetpub\wwwroot\AcuTech\Acuity.1
+
+echo !!!!!!! Stopping IIS !!!!!!!!!!
+iisreset /stop
+
+REN C:\inetpub\wwwroot\AcuTech\Acuity C:\inetpub\wwwroot\AcuTech\Acuity.1
+IF EXIST C:\inetpub\wwwroot\AcuTech\Acuity XCOPY /E /I /Y C:\inetpub\wwwroot\AcuTech\Acuity C:\inetpub\wwwroot\AcuTech\Acuity.1
+
+RMDIR C:\inetpub\wwwroot\AcuTech\Acuity /s /q
+
+echo !!!!!!!! Extracting build archive !!!!!!!!
+"C:\Program Files\7-Zip\7z.exe" x -y -oC:\inetpub\wwwroot\AcuTech C:\Windows\Temp\AcuityProdBuild.7z
+
+XCOPY /E /I C:\inetpub\wwwroot\AcuTech\Acuity\services\Mappings C:\inetpub\wwwroot\AcuTech\Acuity\web\Mappings
+
+echo !!!!!!!!! Copying Prod Config files !!!!!!!!!!!!!
+MOVE /Y C:\inetpub\wwwroot\AcuTech\Acuity\services\Web.Prod.config C:\inetpub\wwwroot\AcuTech\Acuity\services\Web.config
+
+MOVE /Y C:\inetpub\wwwroot\AcuTech\Acuity\web\Web.Prod.config C:\inetpub\wwwroot\AcuTech\Acuity\web\Web.config
+
+DEL /F /Q C:\inetpub\wwwroot\AcuTech\Acuity\services\Web.Prod.config
+DEL /F /Q C:\inetpub\wwwroot\AcuTech\Acuity\web\Web.Prod.config
+
+echo !!!!!!! Restarting IIS !!!!!!!!!!
+iisreset /start
+
+REM timeout /t 15 /nobreak
+REM iisreset /restart
+
+finish
+
+ 

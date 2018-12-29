@@ -1,0 +1,3 @@
+Powershell remote deploy scripts
+Batch script and its work
+Bucket configuration on instances

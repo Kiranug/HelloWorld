@@ -1,0 +1,78 @@
+"solr_indexer_prod" Jenkins Job
+
+1. it will pull latest latest code from git production branch.
+2. Then it will execute following command
+deploy\solr\prod\prod_build.bat %BUILD_NUMBER% (prod_build.bat)
+and below it the configuration of prod_build.bat
+
+@echo off
+
+IF NOT "%1"=="" (
+  SET BUILDVERSION=%1
+)
+
+echo !!!!! Fetching the required libs !!!!!!!!!!
+C:\setups\nuget.exe restore Server/AcuTech.Acuity.Service.sln
+
+echo !!!!!! Building projects !!!!!!!!!!!
+C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe Server\SolrIndexer\.csproj /t:Clean,Build /p:Configuration=Release /p:VisualStudioVersion=12.0 /p:DeployOnBuild=true
+
+rmdir C:\solr_indexer\Mappings /s /q
+rmdir C:\solr_indexer\Release /s /q
+
+XCOPY /E /I Server\Mappings C:\solr_indexer\MappingsSolrIndexer
+XCOPY /E /I Server\SolrIndexer\bin\Release C:\solr_indexer\Release
+
+echo !!!!!!!!! Copying Stg Config files !!!!!!!!!!!!!
+COPY /Y Server\SolrIndexer\App-Prod.config C:\solr_indexer\Release\SolrIndexer.exe.config
+
+DEL /F /Q C:\Windows\Temp\SolrIndexer.7z
+echo !!!!!!!! Creating build archive to upload to S3 !!!!!!!!
+"C:\Program Files\7-Zip\7z.exe" a C:\Windows\Temp\SolrIndexer.7z C:\solr_indexer
+
+echo !!!!!!!! Uploading build archive to S3:acutech/Solr-Indexer-Builds/Prod/%BUILDVERSION%/SolrIndexer.7z !!!!!!!!
+C:\setups\s3.exe put acutechprod/Solr-Indexer-Builds/Prod/%BUILDVERSION%/ C:\Windows\Temp\SolrIndexer.7z /nogui
+
+3. Then it will execute below remote file. (remote_prod_deploy.bat)
+deploy\solr\prod\remote_prod_deploy.bat %BUILD_NUMBER%
+and below is the configuration
+
+@echo off
+
+REM :: TO BE INSTALLED on DEV SERVER (along with C:\AcuTechSTGDeploy\remote_stg_deploy.ps1)
+
+IF "%1"=="" (
+  echo ERROR: Build version not passed
+  exit /b %errorlevel%
+)
+
+SET BUILDVERSION=%1
+
+echo "going to run Invoke-Command for webapp1"
+%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File deploy\solr\prod\remote_prod_deploy.ps1 "ip-10-1-0-231.ec2.internal" "Administrator" "C:\Users\Administrator\SecureString\webapp-stg-passwd.txt" %BUILDVERSION%
+
+and it will invoke remote_prod_deploy.ps1 file on same machine and "solr_prod_deploy.bat" which is running on remote machine.
+Remote batch file location : C:\AcuTechDeploy\solr_prod_deploy.bat
+
+and in "solr_prod_deploy.bat"
+
+@echo off
+
+REM :: TO BE INSTALLED on STAGING SERVERS
+REM :: will be remotely invoked from build machine
+
+IF "%1"=="" (
+  echo ERROR: Build version not passed
+  exit /b %errorlevel%
+)
+
+SET BUILDVERSION=%1
+
+DEL /F /Q C:\Windows\Temp\SolrIndexer.7z
+echo !!!!!!!! Downloading build archive from S3:acutech/Acuity-Builds/Prod/%BUILDVERSION%/SolrIndexer.7z !!!!!!!!
+C:\setups\s3.exe get acutechprod/Solr-Indexer-Builds/Prod/%BUILDVERSION%/SolrIndexer.7z C:\Windows\Temp\SolrIndexer.7z /nogui
+
+echo !!!!!!!! Extracting build archive !!!!!!!!
+rmdir C:\solr_indexer /s /q
+
+"C:\Program Files\7-Zip\7z.exe" x -y -oC:\ C:\Windows\Temp\SolrIndexer.7z

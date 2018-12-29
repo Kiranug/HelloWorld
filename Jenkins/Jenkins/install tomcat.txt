@@ -1,0 +1,27 @@
+yum install java-1.8.0
+yum remove java-1.7.0-openjdk
+yum install tomcat
+systemctl start tomcat
+systemctl status tomcat
+systemctl enable tomcat
+sudo yum install tomcat-webapps tomcat-admin-webapps tomcat-docs-webapp tomcat-javadoc
+cd /usr/share/tomcat/conf
+
+
+---------------------------------------------------------------------
+add following contents to tomcat-users.xml file. remove </tomcat-users> from file as we are addding same at the eof
+
+
+-->
+
+  <role rolename="tomcat"/>
+  <role rolename="role1"/>
+  <role rolename="manager"/>
+  <role rolename="manager-script"/>
+  <role rolename="manager-gui"/>
+  <user username="tomcat" password="tomcat" roles="tomcat"/>
+  <user username="both" password="tomcat" roles="tomcat,role1"/>
+  <user username="role1" password="tomcat" roles="role1"/>
+  <user username="admin2" password="tomcat" roles="manager-gui,manager-script "/>
+
+</tomcat-users>
