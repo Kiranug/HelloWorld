@@ -1,0 +1,19 @@
+Steps:
+======
+1.) Ensure you have an AMI image of your instance before proceeding.
+2.) Confirm that the block device is reflecting the EBS volume size changes.
+- $ sudo lsblk
+3.) use fdisk to delete the current partition and then create a new larger partition.
+- $ sudo fdisk /dev/xvda
+- Command (? for help): d     #delete primary partition - you may need to select 1 for the primary.
+- Command (? for help): n     #create a new partition followed by selecting 'p' for primary and then ensuring that the partition begins on the same sector as the old partition (in this case 2048) then pressing enter without input twice to select the defaults. 
+- Command (? for help): a     #make the new partition bootable - this may automatically select the first partition (1)
+- Command (? for help): w   #write new partition changes to disk.
+3.) Try and force the OS to reload the partition table which may or may not work, alternative is to reboot & Check the partition reflects correctly
+- $ sudo partprobe /dev/xvda
+Alternatively - $ sudo reboot
+-$ sudo lsblk
+4.) Resize the filesystem (in this case xfs)
+- $ sudo xfs_growfs /dev/xvda1
+5.) Check the mounted filesystem resized correctly according to the partition changes.
+- $ df -h
