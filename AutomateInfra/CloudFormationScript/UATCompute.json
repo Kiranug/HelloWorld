@@ -1,0 +1,866 @@
+{
+  "AWSTemplateFormatVersion":	"2010-09-09",
+  "Description":	"AWS CFN to build compute components of the environment.",
+  "Mappings" : {
+	"RegionMapALBBucketPolicy" : {
+		"us-east-1"      : { "id" : "127311923021"},
+		"us-east-2"      : { "id" : "033677994240"},
+		"us-west-1"      : { "id" : "027434742980"},
+		"us-west-2"      : { "id" : "797873946194"},
+		"ca-central-1"      : { "id" : "985666609251"},
+		"eu-central-1"      : { "id" : "054676820928"},
+		"eu-west-1"      : { "id" : "156460612806"},
+		"eu-west-2"      : { "id" : "652711504416"},
+		"eu-west-3"      : { "id" : "009996457667"},
+		"ap-northeast-1" : { "id" : "582318560864"},
+		"ap-northeast-2" : { "id" : "600734575887"},
+		"ap-northeast-3" : { "id" : "383597477331"},
+		"ap-southeast-1" : { "id" : "114774131450"},
+		"ap-southeast-2" : { "id" : "783225319266"},
+		"ap-south-1" : { "id" : "718504428378"},
+		"sa-east-1" : { "id" : "507241528517"}
+	}
+	},
+ "Parameters": {
+	"NetworkStackName":{  
+		"Description":"Name of the Network stack",
+		"Type":"String",
+		"Default":"NT-UAT-Network"
+	},
+	"DBStackName":{  
+		"Description":"Name of the Database stack",
+		"Type":"String",
+		"Default":"NT-UAT-DATA"
+	},
+	"EnvironmentName":{  
+		"Default":"UAT",
+		"Description":"Either Prod, Staging, Demo etc. To be used for tagging resorces.",
+		"Type":"String"
+	},
+	"ClientName":{  
+		"Default":"NT",
+		"Description":"Short & Single Word name of Client. To be used for tagging resources.",
+		"Type":"String"
+	},
+	"ALBLogS3BucketName":{  
+		"Description":"S3 Bucket Name for ALB Logs",
+		"Type":"String",
+		"MinLength":"1",
+		"Default": "aws-uat-alb-logs-nationals"
+	},
+ 	"SSHKeyNameApp":{  
+		"Description":"SSH Key Name to be used for App instances.",
+		"Type":"AWS::EC2::KeyPair::KeyName",
+		"Default":"NT-UAT-App"
+	},
+	"InstanceTypeApp":{  
+		"Description":"Instance Type of the App instances",
+		"Type":"String",
+		"Default":"t2.micro",
+		"AllowedValues":[  "t2.micro", "t2.medium" ]
+	},
+	"ASGMaxCapacityApp":{  
+		"Description":"Max Capacity of Auto Scaling Group-App",
+		"Type":"String",
+		"Default":"0",
+		"AllowedValues":["0", "1", "2", "3", "4"]
+	},
+	"ASGMinCapacityApp":{  
+		"Description":"Min Capacity of Auto Scaling Group-App",
+		"Type":"String",
+		"Default":"0",
+		"AllowedValues":["0", "1", "2", "3", "4"]
+	},
+	"ASGDesCapacityApp":{  
+		"Description":"Desired Capacity of Auto Scaling Group-App",
+		"Type":"String",
+		"Default":"0",
+		"AllowedValues":["0", "1", "2", "3", "4"]
+	},
+	"AMIIDApp" : {
+		"Description" : "AMI ID of App instances to be launched.",
+		"Type" 		  : "AWS::EC2::Image::Id",
+  		"Default" : "ami-0a7f47125fb90a0b6"
+	},
+  	"SSHKeyNameWeb":{  
+		"Description":"SSH Key Name to be used for Web instances.",
+		"Type":"AWS::EC2::KeyPair::KeyName",
+		"Default":"NT-UAT-Web"
+	},
+	"InstanceTypeWeb":{  
+		"Description":"Instance Type of the Web instances",
+		"Type":"String",
+		"Default":"t2.micro",
+		"AllowedValues":[  "t2.micro", "t2.medium", "m5.large", "m5.xlarge" ]
+	},
+	"ASGMaxCapacityWeb":{  
+		"Description":"Max Capacity of Auto Scaling Group-Web",
+		"Type":"String",
+		"Default":"0",
+		"AllowedValues":["0", "1", "2", "3", "4"]
+	},
+	"ASGMinCapacityWeb":{  
+		"Description":"Min Capacity of Auto Scaling Group-Web",
+		"Type":"String",
+		"Default":"0",
+		"AllowedValues":["0", "1", "2", "3", "4"]
+	},
+	"ASGDesCapacityWeb":{  
+		"Description":"Desired Capacity of Auto Scaling Group-Web",
+		"Type":"String",
+		"Default":"0",
+		"AllowedValues":["0", "1", "2", "3", "4"]
+	},
+	"AMIIDWeb" : {
+		"Description" : "AMI ID of Web instances to be launched.",
+		"Type" 		  : "AWS::EC2::Image::Id",
+  		"Default" : "ami-04943ea803b4c8597"
+	},
+	"SSLCertificateARN" : {
+		"Description" : "ARN of SSL Certificate",
+		"Type" : "String",
+		"MinLength" : "20",
+		"Default" : "arn:aws:acm:ap-southeast-2:917513403446:certificate/7cc18123-d1fb-4be5-a60d-8f19becb6dab",
+		"ConstraintDescription" : "SSL Certificate ARN is mandatory"
+	},
+    "SSHKeyNameBastion": {
+     	"Description":"SSH Key Name to be used for Bastion instance.",
+		"Type":"AWS::EC2::KeyPair::KeyName",
+		"Default":"NT-UAT-Bastion"
+    },
+    "AMIIDBastion": {
+      	"Description" : "AMI ID of Bastion instance to be launched.",
+		"Type" 		  : "AWS::EC2::Image::Id",
+  		"Default" : "ami-08589eca6dcc9b39c"
+    }
+  },
+  "Metadata" : {
+	"AWS::CloudFormation::Interface" :{
+		"ParameterGroups": [{
+			"Label" : { "default" : "Environment Configuration" },
+			"Parameters" : [ "ClientName", "EnvironmentName", "NetworkStackName", "ALBLogS3BucketName" ]
+		},{
+			"Label" : { "default":"Web Layer Configuration" },
+			"Parameters" : [ "SSHKeyNameWeb", "InstanceTypeWeb", "ASGMaxCapacityWeb", "ASGMinCapacityWeb", "ASGDesCapacityWeb", "AMIIDWeb", "SSLCertificateARN" ]
+		},{
+			"Label" : { "default":"App Layer Configuration" },
+			"Parameters" : [ "SSHKeyNameApp", "InstanceTypeApp", "ASGMaxCapacityApp", "ASGMinCapacityApp", "ASGDesCapacityApp", "AMIIDApp" ]
+		},{
+			"Label" : { "default":"Bastion Server Configuration" },
+			"Parameters" : [ "SSHKeyNameBastion", "AMIIDBastion" ]
+		}]
+	}
+  },
+  "Resources" : {
+    "S3BucketALBLogs":{
+      "Type":"AWS::S3::Bucket",
+      "Properties":{  
+		"BucketName":{  
+			"Ref":"ALBLogS3BucketName"
+		},
+		"Tags":[{  
+			"Key":"Name",
+			"Value": {  
+				"Fn::Join":[  
+					"-",
+					[  
+						{ "Ref":"ClientName"},
+						{ "Ref":"EnvironmentName"},
+						"alb-logs"
+					]
+				]}
+			},{  
+				"Key":"Environment",
+				"Value":{ "Ref":"EnvironmentName"}
+			},{  
+				"Key":"CreatedBy",
+				"Value":"BlazeClan"
+  			}
+		]}
+	},
+	"S3BucketALBLogsPolicy" : {
+		"Type" : "AWS::S3::BucketPolicy",
+		"Properties" : {
+			"Bucket" : { "Ref" : "S3BucketALBLogs" },
+			"PolicyDocument" : {
+				"Statement" : [{
+					"Action" : [ "s3:PutObject" ],
+					"Effect" : "Allow",
+					"Resource" : { "Fn::Join" : [ "", [ "arn:aws:s3:::", { "Ref" : "S3BucketALBLogs" }, "/*"  ] ] },
+					"Principal" : {
+						"AWS":  { 
+							"Fn::Join": [
+								":", [
+									"arn",
+									"aws",
+									"iam",
+									"",
+									{ "Fn::FindInMap" : [ "RegionMapALBBucketPolicy", { "Ref" : "AWS::Region" }, "id"]},
+									"root"
+								]
+							]
+						}
+					}
+				}]
+			}
+		}
+	},
+	"EC2Role": {
+		"Type": "AWS::IAM::Role",
+		"Properties": {
+			"AssumeRolePolicyDocument": {
+				"Statement": [{
+					"Effect": "Allow",
+					"Principal": {
+						"Service": [
+							"ec2.amazonaws.com"
+						]
+					},
+					"Action": [
+						"sts:AssumeRole"
+					]
+				}]
+			},
+			"Path": "/",
+			"Policies": [{
+					"PolicyName": "AmazonRDSFullAccess",
+					"PolicyDocument": {
+						"Statement": [{
+							"Action": [
+								"logs:DescribeLogStreams",
+								"logs:GetLogEvents"
+							],
+							"Effect": "Allow",
+							"Resource": "*"
+						}]
+					}
+				},
+				{
+					"PolicyName": "AmazonEC2FullAccess",
+					"PolicyDocument": {
+						"Statement": [{
+								"Action": "ec2:*",
+								"Effect": "Allow",
+								"Resource": "*"
+							},
+							{
+								"Effect": "Allow",
+								"Action": "elasticloadbalancing:*",
+								"Resource": "*"
+							},
+							{
+								"Effect": "Allow",
+								"Action": "cloudwatch:*",
+								"Resource": "*"
+							},
+							{
+								"Effect": "Allow",
+								"Action": "autoscaling:*",
+								"Resource": "*"
+							}
+						]
+					}
+				},
+				{
+					"PolicyName": "AmazonS3FullAccess",
+					"PolicyDocument": {
+						"Statement": [{
+							"Effect": "Allow",
+							"Action": "s3:*",
+							"Resource": "*"
+						}]
+					}
+				},
+				{
+					"PolicyName": "CloudWatchFullAccess",
+					"PolicyDocument": {
+						"Statement": [{
+							"Action": [
+								"autoscaling:Describe*",
+								"cloudwatch:*",
+								"logs:*",
+								"sns:*"
+							],
+							"Effect": "Allow",
+							"Resource": "*"
+						}]
+					}
+				},
+				{
+					"PolicyName": "CloudWatchAgentServerPolicy",
+					"PolicyDocument": {
+						"Statement": [{
+							"Action": [
+								"cloudwatch:PutMetricData",
+								"ec2:DescribeTags",
+								"logs:PutLogEvents",
+								"logs:DescribeLogStreams",
+								"logs:DescribeLogGroups",
+								"logs:CreateLogStream",
+								"logs:CreateLogGroup"
+							],
+							"Effect": "Allow",
+							"Resource": "*"
+						}]
+					}
+				}
+				
+			]
+		}
+	},
+	"EC2AppInstanceProfile": {
+		"Type": "AWS::IAM::InstanceProfile",
+		"Properties": {
+			"Path": "/",
+			"Roles": [{
+				"Ref": "EC2Role"
+			}]
+		}
+	},
+	"EC2WebInstanceProfile": {
+		"Type": "AWS::IAM::InstanceProfile",
+		"Properties": {
+			"Path": "/",
+			"Roles": [{
+				"Ref": "EC2Role"
+			}]
+		}
+	},	
+	"ALBUATApp": {
+		"Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+		"Properties": {
+			"LoadBalancerAttributes": [{
+				"Key": "deletion_protection.enabled",
+				"Value": "true"
+			},{
+				"Key": "access_logs.s3.enabled",
+				"Value": "true"
+			},{
+				"Key": "access_logs.s3.bucket",
+				"Value": { "Ref": "S3BucketALBLogs"}
+			},{
+				"Key": "access_logs.s3.prefix",
+				"Value": "App"
+			},{
+				"Key": "idle_timeout.timeout_seconds",
+				"Value": 60
+			},{
+				"Key": "routing.http2.enabled",
+				"Value": "true"
+			}],
+			"Name": {
+				"Fn::Join": [
+					"-", [
+       					{"Ref": "ClientName"},
+						{"Ref": "EnvironmentName"},
+						"ALB-App"
+					]
+				]
+			},
+			"Scheme": "internal",
+			"SecurityGroups": [{
+				"Fn::ImportValue": {
+					"Fn::Sub": "${NetworkStackName}-LBInternalSecurityGroup"
+				}
+			}],
+			"Subnets": [{
+					"Fn::ImportValue": { "Fn::Sub": "${NetworkStackName}-AppSubnet2A"}
+				},{
+					"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-AppSubnet2B"}
+				},{
+					"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-AppSubnet2C"}
+				}
+			] ,
+			"IpAddressType": "ipv4",
+			"Type": "application",
+			"Tags": [{
+					"Key": "Name",
+					"Value": {
+						"Fn::Join": [
+							"-", [
+          						{"Ref": "ClientName"},
+								{"Ref": "EnvironmentName"},
+								"ALB-App"
+							]
+						]
+					}
+				},
+				{
+					"Key": "Environment",
+					"Value": {"Ref": "EnvironmentName"}
+				},
+				{
+						"Key": "CreatedBy",
+						"Value": "BlazeClan"
+				}
+			]
+		}
+	},
+	"ALBUATWeb": {
+		"Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+		"Properties": {
+			"LoadBalancerAttributes": [{
+				"Key": "deletion_protection.enabled",
+				"Value": "true"
+			},{
+				"Key": "access_logs.s3.enabled",
+				"Value": "true"
+			},{
+				"Key": "access_logs.s3.bucket",
+				"Value": { "Ref": "S3BucketALBLogs"}
+			},{
+				"Key": "access_logs.s3.prefix",
+				"Value": "Web"
+			},{
+				"Key": "idle_timeout.timeout_seconds",
+				"Value": 60
+			},{
+				"Key": "routing.http2.enabled",
+				"Value": "true"
+			}],
+			"Name": {
+				"Fn::Join": [
+					"-", [
+       					{"Ref": "ClientName"},
+						{"Ref": "EnvironmentName"},
+						"ALB-Web"
+					]
+				]
+			},
+			"Scheme": "internet-facing",
+			"SecurityGroups": [{
+				"Fn::ImportValue": {
+					"Fn::Sub": "${NetworkStackName}-LBExternalSecurityGroup"
+				}
+			}],
+			"Subnets":[{
+					"Fn::ImportValue": { "Fn::Sub": "${NetworkStackName}-PublicSubnet2A"}
+				},{
+					"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-PublicSubnet2B"}
+				},{
+					"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-PublicSubnet2C"}
+				}
+			],
+			"IpAddressType": "ipv4",
+			"Type": "application",
+			"Tags": [{
+					"Key": "Name",
+					"Value": {
+						"Fn::Join": [
+							"-", [
+          						{"Ref": "ClientName"},
+								{"Ref": "EnvironmentName"},
+								"ALB-Web"
+							]
+						]
+					}
+				},
+				{
+					"Key": "Environment",
+					"Value": {
+						"Ref": "EnvironmentName"
+					}
+				},
+				{
+					"Key": "CreatedBy",
+					"Value": "BlazeClan"
+				}
+			]
+		}
+	},
+	"ALBTGUATWeb": {
+		"Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+		"Properties": {
+			"HealthCheckIntervalSeconds": 30,
+			"HealthCheckPath": "/",
+			"HealthCheckPort": 80,
+			"HealthCheckProtocol": "HTTP",
+			"HealthCheckTimeoutSeconds": 5,
+			"HealthyThresholdCount": 5,
+			"Matcher": {
+				"HttpCode": "200"
+			},
+			"Name": {
+				"Fn::Join": [
+					"-", [{
+							"Ref": "ClientName"
+						},
+						{
+							"Ref": "EnvironmentName"
+						},
+						"TG-Web"
+					]
+				]
+			},
+			"Port": 80,
+			"Protocol": "HTTP",
+			"Tags": [{
+					"Key": "Name",
+					"Value": {
+						"Fn::Join": [
+							"-", [{
+									"Ref": "ClientName"
+								},
+								{
+									"Ref": "EnvironmentName"
+								},
+								"ALB-TG-UAT-Web"
+							]
+						]
+					}
+				},
+				{
+					"Key": "Environment",
+					"Value": {
+						"Ref": "EnvironmentName"
+					}
+				},
+				{
+					"Key": "CreatedBy",
+					"Value": "BlazeClan"
+				}
+			],
+			"TargetGroupAttributes": [{
+					"Key": "deregistration_delay.timeout_seconds",
+					"Value": 300
+				},
+				{
+					"Key": "stickiness.enabled",
+					"Value": "false"
+				}
+			],
+			"TargetType": "instance",
+			"UnhealthyThresholdCount": 2,
+			"VpcId": {
+				"Fn::ImportValue": {
+					"Fn::Sub": "${NetworkStackName}-VPC"
+				}
+			}
+		}
+	},
+ 	"ALBTGUATApp": {
+		"Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+		"Properties": {
+			"HealthCheckIntervalSeconds": 30,
+			"HealthCheckPath": "/",
+			"HealthCheckPort": 80,
+			"HealthCheckProtocol": "HTTP",
+			"HealthCheckTimeoutSeconds": 5,
+			"HealthyThresholdCount": 5,
+			"Matcher": {
+				"HttpCode": "200"
+			},
+			"Name": {
+				"Fn::Join": [
+					"-", [{
+							"Ref": "ClientName"
+						},
+						{
+							"Ref": "EnvironmentName"
+						},
+						"TG-App"
+					]
+				]
+			},
+			"Port": 80,
+			"Protocol": "HTTP",
+			"Tags": [{
+					"Key": "Name",
+					"Value": {
+						"Fn::Join": [
+							"-", [{
+									"Ref": "ClientName"
+								},
+								{
+									"Ref": "EnvironmentName"
+								},
+								"ALB-TG-UAT-App"
+							]
+						]
+					}
+				},
+				{
+					"Key": "Environment",
+					"Value": {
+						"Ref": "EnvironmentName"
+					}
+				},
+				{
+					"Key": "CreatedBy",
+					"Value": "BlazeClan"
+				}
+			],
+			"TargetGroupAttributes": [{
+					"Key": "deregistration_delay.timeout_seconds",
+					"Value": 300
+				},
+				{
+					"Key": "stickiness.enabled",
+					"Value": "false"
+				}
+			],
+			"TargetType": "instance",
+			"UnhealthyThresholdCount": 2,
+			"VpcId": {
+				"Fn::ImportValue": {
+					"Fn::Sub": "${NetworkStackName}-VPC"
+				}
+			}
+		}
+	},
+	"ALBListenerUATWeb" : {
+		"Type" : "AWS::ElasticLoadBalancingV2::Listener",
+		"Properties" : {
+			"DefaultActions" : [{
+				"TargetGroupArn" : { "Ref" : "ALBTGUATWeb" },
+				"Type" : "forward"
+			}],
+			"LoadBalancerArn" : { "Ref" : "ALBUATWeb" },
+			"Port" : 80,
+			"Protocol" : "HTTP"
+		}
+	},
+	"ALBListenerUATWeb443" : {
+		"Type" : "AWS::ElasticLoadBalancingV2::Listener",
+		"Properties" : {
+			"DefaultActions" : [{
+				"TargetGroupArn" : { "Ref" : "ALBTGUATWeb" },
+				"Type" : "forward"
+			}],
+			"LoadBalancerArn" : { "Ref" : "ALBUATWeb" },
+			"Port" : 443,
+			"Protocol" : "HTTPS",
+			"Certificates" : [{
+				"CertificateArn" : {"Ref" : "SSLCertificateARN"}
+			}]
+		}
+	},
+	"ALBListenerUATApp" : {
+		"Type" : "AWS::ElasticLoadBalancingV2::Listener",
+		"Properties" : {
+			"DefaultActions" : [{
+				"TargetGroupArn" : { "Ref" : "ALBTGUATApp" },
+				"Type" : "forward"
+			}],
+			"LoadBalancerArn" : { "Ref" : "ALBUATApp" },
+			"Port" : 80,
+			"Protocol" : "HTTP"
+		}
+	},
+	"ALBListenerUATApp443" : {
+		"Type" : "AWS::ElasticLoadBalancingV2::Listener",
+		"Properties" : {
+			"DefaultActions" : [{
+				"TargetGroupArn" : { "Ref" : "ALBTGUATApp" },
+				"Type" : "forward"
+			}],
+			"LoadBalancerArn" : { "Ref" : "ALBUATApp" },
+			"Port" : 443,
+			"Protocol" : "HTTPS",
+			"Certificates" : [{
+				"CertificateArn" : {"Ref" : "SSLCertificateARN"}
+			}]
+		}
+	},
+ 	"ASGAppUATLC": {
+		"Type": "AWS::AutoScaling::LaunchConfiguration",
+		"Properties": {
+			"AssociatePublicIpAddress": "false",
+			"EbsOptimized": "false",
+			"ImageId": {
+				"Ref": "AMIIDApp"
+			},
+			"InstanceMonitoring": "false",
+			"InstanceType": {
+				"Ref": "InstanceTypeApp"
+			},
+			"IamInstanceProfile": {
+				"Ref": "EC2AppInstanceProfile"
+			},
+			"KeyName": { "Ref": "SSHKeyNameApp"},
+			"PlacementTenancy": "default",
+			"SecurityGroups": [{
+				"Fn::ImportValue": {
+					"Fn::Sub": "${NetworkStackName}-AppSecurityGroup"
+				}
+			}],
+			"UserData": "IyEvYmluL2Jhc2gKc3VkbyBtb3VudCAtdCBuZnM0IC1vIG5mc3ZlcnM9NC4xLHJzaXplPTEwNDg1NzYsd3NpemU9MTA0ODU3NixoYXJkLHRpbWVvPTYwMCxyZXRyYW5zPTIsbm9yZXN2cG9ydCBmcy0yNzBmYjAxZS5lZnMuYXAtc291dGhlYXN0LTIuYW1hem9uYXdzLmNvbTovIC9lZnM="
+		}
+	},
+	
+ 	"ASGWebUATLC": {
+		"Type": "AWS::AutoScaling::LaunchConfiguration",
+		"Properties": {
+			"AssociatePublicIpAddress": "false",
+			"EbsOptimized": "false",
+			"ImageId": {
+				"Ref": "AMIIDWeb"
+			},
+			"InstanceMonitoring": "false",
+			"InstanceType": {
+				"Ref": "InstanceTypeWeb"
+			},
+			"IamInstanceProfile": {
+				"Ref": "EC2WebInstanceProfile"
+			},
+			
+			"KeyName": { "Ref": "SSHKeyNameWeb"},
+			"PlacementTenancy": "default",
+			"SecurityGroups": [{
+				"Fn::ImportValue": {
+					"Fn::Sub": "${NetworkStackName}-WebSecurityGroup"
+				}
+			}]
+		}
+	},
+	"ASGUATApp": {
+		"Type": "AWS::AutoScaling::AutoScalingGroup",
+		"Properties": {
+			"AutoScalingGroupName" : {
+				"Fn::Join" : [
+					"-", [
+						{ "Ref" : "ClientName" },
+						{ "Ref" : "EnvironmentName" },
+						"Ngnix-App-ASG"
+					]
+				]
+			},
+			"Cooldown": "60",
+			"DesiredCapacity": { "Ref": "ASGDesCapacityApp"},
+			"MaxSize": { "Ref": "ASGMaxCapacityApp"},
+			"MinSize": { "Ref": "ASGMinCapacityApp"},
+			"HealthCheckGracePeriod": "30",
+			"HealthCheckType": "EC2",
+			"LaunchConfigurationName": { "Ref": "ASGAppUATLC"},
+			"Tags": [{
+				"Key": "Name",
+				"Value": {
+					"Fn::Join": [
+						"-", [
+        					{ "Ref": "ClientName"},
+							{ "Ref": "EnvironmentName"},
+							"Ngnix-App-ASG"
+						]
+					]
+				},
+				"PropagateAtLaunch": "true"
+			},
+			{
+				"Key": "Environment",
+				"Value": { "Ref": "EnvironmentName"},
+				"PropagateAtLaunch": "true"
+			},
+			{
+				"Key": "CreatedBy",
+				"Value": "BlazeClan",
+				"PropagateAtLaunch": "true"
+			}
+		],
+		"TargetGroupARNs": [{ "Ref": "ALBTGUATApp"}],
+		"TerminationPolicies": ["NewestInstance"],
+		"VPCZoneIdentifier": [
+    		{"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-AppSubnet2A"}},
+			{"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-AppSubnet2B"}},
+			{"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-AppSubnet2C"}}
+ 		]}
+	},
+	"ASGUATWeb": {
+		"Type": "AWS::AutoScaling::AutoScalingGroup",
+		"Properties": {
+			"AutoScalingGroupName" : {
+				"Fn::Join" : [
+					"-", [
+						{ "Ref" : "ClientName" },
+						{ "Ref" : "EnvironmentName" },
+						"Varnish-Web-ASG"
+					]
+				]
+			},
+			"Cooldown": "60",
+			"DesiredCapacity": { "Ref": "ASGDesCapacityWeb"},
+			"MaxSize": { "Ref": "ASGMaxCapacityWeb"},
+			"MinSize": { "Ref": "ASGMinCapacityWeb"},
+			"HealthCheckGracePeriod": "30",
+			"HealthCheckType": "EC2",
+			"LaunchConfigurationName": { "Ref": "ASGWebUATLC"},
+			"Tags": [{
+				"Key": "Name",
+				"Value": {
+					"Fn::Join": [
+						"-", [
+        					{ "Ref": "ClientName"},
+							{ "Ref": "EnvironmentName"},
+							"Varnish-Web-ASG"
+						]
+					]
+				},
+				"PropagateAtLaunch": "true"
+			},
+			{
+				"Key": "Environment",
+				"Value": { "Ref": "EnvironmentName"},
+				"PropagateAtLaunch": "true"
+			},
+			{
+				"Key": "CreatedBy",
+				"Value": "BlazeClan",
+				"PropagateAtLaunch": "true"
+			}
+		],
+		"TargetGroupARNs": [{ "Ref": "ALBTGUATWeb"}],
+		"TerminationPolicies": ["NewestInstance"],
+		"VPCZoneIdentifier": [
+    		{"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-WebSubnet2A"}},
+			{"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-WebSubnet2B"}},
+			{"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-WebSubnet2C"}}
+ 		]}
+	},
+ 	"EC2Bastion" : {
+   		"Type" : "AWS::EC2::Instance",
+		"Properties" : {
+      		"ImageId" : {"Ref" : "AMIIDBastion"},
+       		"InstanceType" : "t2.micro",
+         	"KeyName" : {"Ref" : "SSHKeyNameBastion"},
+          	"SecurityGroupIds": [{
+				"Fn::ImportValue": {
+					"Fn::Sub": "${NetworkStackName}-BastionSecurityGroup"
+				}
+			}],
+           	"SubnetId" : {"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-PublicSubnet2B"}},
+            "Tags": [{
+					"Key": "Name",
+					"Value": {
+						"Fn::Join": [
+							"-", [{
+									"Ref": "ClientName"
+								},
+								{
+									"Ref": "EnvironmentName"
+								},
+								"Bastion"
+							]
+						]
+					}
+				},
+				{
+					"Key": "Environment",
+					"Value": {
+						"Ref": "EnvironmentName"
+					}
+				},
+				{
+					"Key": "CreatedBy",
+					"Value": "BlazeClan"
+				}
+			]
+  		}
+ 	},
+	"EIPBastion" : {
+		"Type" : "AWS::EC2::EIP",
+		"Properties" : {
+			"InstanceId" : { "Ref" : "EC2Bastion" }
+		}
+	}
+  }
+ 
+}

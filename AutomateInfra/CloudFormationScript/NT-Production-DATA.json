@@ -1,0 +1,239 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "This templete creates RDS instance and its components",
+	"Parameters": {
+		"NetworkStackName":{  
+			"Description":"Name of the Network stack",
+			"Type":"String",
+			"Default":"NT-Production-Network"
+		},
+		"EnvironmentName":{  
+			"Default":"Production",
+			"Description":"Either Prod, Staging, Demo etc. To be used for tagging resorces.",
+			"Type":"String"
+		},
+		"ClientName":{  
+			"Default":"NT",
+			"Description":"Short & Single Word name of Client. To be used for tagging resources.",
+			"Type":"String"
+		},
+		"DBSIZE":{  
+			"Default":"50",
+			"Description":"Short & Single Word name of Client. To be used for tagging resources.",
+			"Type":"String"
+		},
+		"DBNAME": {
+			"Default": "MyDatabase",
+			"Description" : "The database name",
+			"Type": "String",
+			"MinLength": "1",
+			"MaxLength": "64",
+			"AllowedPattern" : "^[a-zA-Z][a-zA-Z0-9_]*",  
+			"ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+		},
+		"DBUSER": {
+			"Description" : "The database admin account username",
+			"Type": "String",
+			"MinLength": "1",
+			"MaxLength": "16",
+			"AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+			"ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+		},
+		"DBPASSWORD": {
+			"NoEcho": "true",
+			"Description" : "The database admin account password",
+			"Type": "String",
+			"MinLength": "8",
+			"MaxLength": "41",
+			"AllowedPattern" : "[a-zA-Z0-9]*",
+			"ConstraintDescription" : "must contain only alphanumeric characters."
+		},
+		"InstanceClass":{  
+			"Description":"Instance Class of the Database  instances",
+			"Type":"String",
+			"Default":"db.t2.small",
+			"AllowedValues":[  "db.t2.micro", "db.t2.small", "db.t2.medium", "db.t2.large", "db.t2.xlarge", "db.m4.xlarge","db.m5.large", "db.m5.xlarge" ]
+		},
+		"DBVersion":{  
+			"Description":"Engine Version of the Database  instances",
+			"Type":"String",
+			"Default":"5.5.61",
+			"AllowedValues":[ "5.5.46", "5.5.53", "5.5.57", "5.5.59", "5.5.61", "5.6.34", "5.6.35", "5.6.37", "5.6.39", "5.6.40", "5.6.41", "5.7.16", "5.7.17", "5.7.19", "5.7.21", "5.7.22", "5.7.23", "8.0.11"]
+			
+		},
+		"MultiAZDatabase": {
+			"Default": "true",
+			"Description" : "Create a multi-AZ MySQL Amazon RDS database instance",
+			"Type": "String",
+			"AllowedValues" : [ "true", "false" ],
+			"ConstraintDescription" : "must be either true or false."
+		},
+		"FamilyParameterGroup":{  
+			"Description":"Create a parameter group",
+			"Type":"String",
+			"AllowedValues":["mysql5.6","mysql5.7","mysql8.0"],
+			"Default": "mysql5.6"
+		},
+		"CacheParameterGroup":{  
+			"Description":"Create a elastic cache parameter group",
+			"Type":"String",
+			"AllowedValues":["memcached1.4","redis2.6","redis2.8","redis3.2","redis4.0"],
+			"Default": "redis2.8"
+		},
+		"CacheInstanceTypeSecure":{  
+			"Description":"Node type of elastic cache",
+			"Type":"String",
+			"AllowedValues":["cache.t2.small","cache.r4.large","cache.t2.small","cache.t2.small","cache.r5.large","cache.r5.large","cache.r5.large","cache.r5.large","cache.r5.12xlarge","cache.r5.24xlarge"],
+			"Default": "cache.t2.small"
+		}
+    },
+	"Resources" : {
+		"DBSubnetGroup" : {
+			"Type" : "AWS::RDS::DBSubnetGroup",
+			"Properties" : {
+				"DBSubnetGroupDescription" : "WebServer DB subnet group",
+				"SubnetIds" : [ {"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-DBSubnet2A"}},
+					{"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-DBSubnet2B"}},
+					{"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-DBSubnet2C"}}
+				]  
+			}
+		},
+		"ParameterGroup": {
+			"Type": "AWS::RDS::DBParameterGroup",
+			"Properties" : {
+				"Description" : "CloudFormation Sample Parameter Group",
+				"Family" : { "Ref":"FamilyParameterGroup"}	
+			}
+		},
+		"DB1" : {
+			"Type" : "AWS::RDS::DBInstance",
+			"Properties" : {
+				"DBName" : { "Ref" : "DBNAME" },
+				"AllocatedStorage" : { "Ref" : "DBSIZE" },
+				"AllowMajorVersionUpgrade" : "true",
+				"DBInstanceClass" : { "Ref" : "InstanceClass" },
+				"Engine" : "MySQL",
+				"EngineVersion" : { "Ref" : "DBVersion" },
+				"DBSubnetGroupName" : { "Ref" : "DBSubnetGroup" },
+				"MasterUsername" : { "Ref" : "DBUSER" },
+				"MasterUserPassword" : { "Ref" : "DBPASSWORD" },
+				"StorageType" : "gp2",
+				"MultiAZ": { "Ref": "MultiAZDatabase" },
+				"DBParameterGroupName" : { "Ref" : "ParameterGroup" },
+				"StorageEncrypted":"true",
+				"VPCSecurityGroups": [{"Fn::ImportValue":{ "Fn::Sub" : "${NetworkStackName}-DbSecurityGroup" }}],			
+				"Tags":[{  
+					"Key":"Name",
+					"Value": {
+						"Fn::Join":[  
+							"-",
+							[  
+								{ "Ref":"ClientName"},
+								{ "Ref":"EnvironmentName"},
+								"DB"
+							]
+						]}
+					},{  
+						"Key":"Environment",
+						"Value":{ "Ref":"EnvironmentName"}
+					},{  
+						"Key":"CreatedBy",
+						"Value":"BlazeClan"
+					},{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				]
+			}
+		},
+		"REDIS" : {
+			"Type" : "AWS::ElastiCache::CacheCluster",
+			"DependsOn" : ["ECSubnetGroup","ECParameterGroup"],
+			"Properties" : {
+				"AutoMinorVersionUpgrade"  : "true",
+				"CacheNodeType" : { "Ref" : "CacheInstanceTypeSecure" },
+				"CacheParameterGroupName"     : { "Ref" : "ECParameterGroup" },
+				"CacheSubnetGroupName"         : { "Ref" : "ECSubnetGroup" },
+				"Engine" : "redis",
+				"EngineVersion" : "2.8.24",
+				"NumCacheNodes" : 1,
+				"Port" : 6379,
+				"PreferredMaintenanceWindow": "sat:21:59-sat:22:59",
+				"Tags" : [
+					{"Key" : "CreatedBy", "Value" : "BlazeClan" },
+					{"Key" : "Environment", "Value" : { "Ref" : "EnvironmentName" } },
+					{"Key" : "Region", "Value" : {"Ref" : "AWS::Region"}},
+					{"Key" : "Name", "Value" : {
+						"Fn::Join" : [
+							"-", [
+								{ "Ref" : "ClientName" },
+								{ "Ref" : "EnvironmentName" },
+								"Cache-Redis"
+							]
+						]}
+					},
+					{"Key" : "Infra_Managed_By", "Value" : "Blazeclan"}
+				],
+				"VpcSecurityGroupIds" : [{ "Fn::ImportValue" : { "Fn::Sub" : "${NetworkStackName}-CacheSecurityGroup" } }]
+			}
+		},
+		"ECSubnetGroup" : {
+			"Type" : "AWS::ElastiCache::SubnetGroup",
+			"Properties" : {
+				"Description" : "CloudFormation Elastic cache Subnet Group",
+				"SubnetIds" : [ {"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-DBSubnet2A"}},
+					{"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-DBSubnet2B"}},
+					{"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-DBSubnet2C"}}
+				]  
+			}
+		},
+		"ECParameterGroup": {
+			"Type": "AWS::ElastiCache::ParameterGroup",
+			"Properties" : {
+				"Description" : "CloudFormation Elastic cache Parameter Group",
+				"CacheParameterGroupFamily" : { "Ref":"CacheParameterGroup"}
+			}
+		},		
+		"FileSystem": {
+			"Type": "AWS::EFS::FileSystem",
+			"Properties": {
+				"PerformanceMode": "generalPurpose",
+				"Encrypted" : "true",
+				"FileSystemTags": [{ "Key": "Name","Value": "EFS"}]
+			}
+		},
+		"MountTarget01": {
+			"Type": "AWS::EFS::MountTarget",
+			"Properties": {
+				"FileSystemId": { "Ref": "FileSystem" },
+				"SubnetId": {"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-AppSubnet2A"}},
+				"SecurityGroups": [{"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-MountTargetSecurityGroup"}}] 
+			}
+		},
+		"MountTarget02": {
+			"Type": "AWS::EFS::MountTarget",
+			"Properties": {
+				"FileSystemId": { "Ref": "FileSystem" },
+				"SubnetId": {"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-AppSubnet2B"}},
+				"SecurityGroups": [{"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-MountTargetSecurityGroup"}}]     
+			}
+		},
+		"MountTarget03": {
+			"Type": "AWS::EFS::MountTarget",
+			"Properties": {
+				"FileSystemId": { "Ref": "FileSystem" },
+				"SubnetId": {"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-AppSubnet2C"}},
+				"SecurityGroups":[{"Fn::ImportValue": {"Fn::Sub": "${NetworkStackName}-MountTargetSecurityGroup"}}]
+			}
+		}
+	},
+	"Outputs" : {
+		"FileSystemID" : {
+			"Description" : "File system ID",
+			"Value" :  { "Ref" : "FileSystem" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-FileSystem" }
+			}
+		}
+	}
+}

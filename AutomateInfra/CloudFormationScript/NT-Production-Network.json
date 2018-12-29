@@ -1,0 +1,1994 @@
+
+{
+	"AWSTemplateFormatVersion" : "2010-09-09",
+	"Description" : "AWS CFN to build network components of the environment.",
+	"Parameters" : {
+		"ClientName" : {
+			"Default" : "NT",
+			"Description" : "Short & Single Word name of Client. To be used for tagging resources.",
+			"Type" : "String"
+		},
+		"EnvironmentName" : {
+			"Default" : "Production",
+			"Description" : "Either Prod, Staging, Demo etc. To be used for tagging resorces.",
+			"Type" : "String"
+		},
+		"VPCCidrBlock" : {
+			"Default" : "10.20.0.0/16",
+			"Description" : "CIDR block of VPC being created",
+			"Type" : "String",
+			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription" : "Must be a valid private CIDR range."
+		},
+		"PublicSubnetCidrBlockA" : {
+			"Default" : "10.20.0.0/24",
+			"Description" : "CIDR block of Public Subnet in AZ A",
+			"Type" : "String",
+			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription" : "Must be a valid private CIDR range."
+		},
+		"PublicSubnetCidrBlockB" : {
+			"Default" : "10.20.2.0/24",
+			"Description" : "CIDR block of Public Subnet in AZ B",
+			"Type" : "String",
+			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription" : "Must be a valid private CIDR range."
+		},
+		"PublicSubnetCidrBlockC" : {
+			"Default" : "10.20.4.0/24",
+			"Description" : "CIDR block of Public Subnet in AZ C",
+			"Type" : "String",
+			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription" : "Must be a valid private CIDR range."
+		},
+		"AppSubnetCidrBlockA" : {
+			"Default" : "10.20.20.0/24",
+			"Description" : "CIDR block of service Subnet in AZ A",
+			"Type" : "String",
+			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription" : "Must be a valid private CIDR range."
+		},
+		"AppSubnetCidrBlockB" : {
+			"Default" : "10.20.22.0/24",
+			"Description" : "CIDR block of service Subnet in AZ B",
+			"Type" : "String",
+			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription" : "Must be a valid private CIDR range."
+		},
+		"AppSubnetCidrBlockC" : {
+			"Default" : "10.20.24.0/24",
+			"Description" : "CIDR block of service Subnet in AZ C",
+			"Type" : "String",
+			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription" : "Must be a valid private CIDR range."
+		},
+		"WebSubnetCidrBlockA" : {
+			"Default" : "10.20.10.0/24",
+			"Description" : "CIDR block of Web Subnet in AZ A",
+			"Type" : "String",
+			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription" : "Must be a valid private CIDR range."
+		},
+		"WebSubnetCidrBlockB" : {
+			"Default" : "10.20.12.0/24",
+			"Description" : "CIDR block of Web Subnet in AZ B",
+			"Type" : "String",
+			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription" : "Must be a valid private CIDR range."
+		},
+		"WebSubnetCidrBlockC" : {
+			"Default" : "10.20.14.0/24",
+			"Description" : "CIDR block of Web Subnet in AZ C",
+			"Type" : "String",
+			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription" : "Must be a valid private CIDR range."
+		},
+		"DbSubnetCidrBlockA" : {
+			"Default" : "10.20.30.0/24",
+			"Description" : "CIDR block of Db Subnet in AZ A",
+			"Type" : "String",
+			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription" : "Must be a valid private CIDR range."
+		},
+		"DbSubnetCidrBlockB" : {
+			"Default" : "10.20.32.0/24",
+			"Description" : "CIDR block of Db Subnet in AZ B",
+			"Type" : "String",
+			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription" : "Must be a valid private CIDR range."
+		},
+		"DbSubnetCidrBlockC" : {
+			"Default" : "10.20.34.0/24",
+			"Description" : "CIDR block of Db Subnet in AZ C",
+			"Type" : "String",
+			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription" : "Must be a valid private CIDR range."
+		}
+		
+		
+	},
+	"Metadata" : {
+		"AWS::CloudFormation::Interface" :{
+			"ParameterGroups": [{
+				"Label" : { "default" : "Environment Configuration" },
+				"Parameters" : [ "ClientName", "EnvironmentName", "VPCCidrBlock" ]
+			},{
+				"Label" : { "default":"Public Layer Configuration" },
+				"Parameters" : [ "PublicSubnetCidrBlockA", "PublicSubnetCidrBlockB", "PublicSubnetCidrBlockC" ]
+			},{
+				"Label" : { "default":"Web Layer Configuration" },
+				"Parameters" : [ "WebSubnetCidrBlockA", "WebSubnetCidrBlockB", "WebSubnetCidrBlockC" ]
+			},{
+				"Label" : { "default":"App Layer Configuration" },
+				"Parameters" : [ "AppSubnetCidrBlockA", "AppSubnetCidrBlockB", "AppSubnetCidrBlockC" ]
+			},{
+				"Label" : { "default":"Database Layer Configuration" },
+				"Parameters" : [ "DbSubnetCidrBlockA", "DbSubnetCidrBlockB", "DbSubnetCidrBlockC" ]
+			}]
+		}
+	},
+	"Resources" : {
+		"VPC" : {
+			"Type" : "AWS::EC2::VPC",
+			"Properties" : {
+				"CidrBlock" : { "Ref" : "VPCCidrBlock"},
+				"EnableDnsSupport" : "true",
+				"EnableDnsHostnames" : "true",
+				"InstanceTenancy" : "default",
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"VPC"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				]
+			}
+		},
+		"PublicSubnet2A" : {
+			"Type" : "AWS::EC2::Subnet",
+   			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"AvailabilityZone": {
+					"Fn::Join" :
+					[
+						"",
+						[
+							{
+								"Ref" : "AWS::Region"
+							},
+							"a"
+						]
+					]
+				},
+				"CidrBlock" : { "Ref" : "PublicSubnetCidrBlockA"},
+				"MapPublicIpOnLaunch" : "true",
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"PublicSubnet-A"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				],
+				"VpcId" : { "Ref" : "VPC" }
+			}
+		},
+		"PublicSubnet2B" : {
+			"Type" : "AWS::EC2::Subnet",
+   			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"AvailabilityZone": {
+					"Fn::Join" :
+					[
+						"",
+						[
+							{
+								"Ref" : "AWS::Region"
+							},
+							"b"
+						]
+					]
+				},
+				"CidrBlock" : { "Ref" : "PublicSubnetCidrBlockB"},
+				"MapPublicIpOnLaunch" : "true",
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"PublicSubnet-B"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				],
+				"VpcId" : { "Ref" : "VPC" }
+			}
+		},
+		"PublicSubnet2C" : {
+			"Type" : "AWS::EC2::Subnet",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"AvailabilityZone": {
+					"Fn::Join" :
+					[
+						"",
+						[
+							{
+								"Ref" : "AWS::Region"
+							},
+							"c"
+						]
+					]
+				},
+				"CidrBlock" : { "Ref" : "PublicSubnetCidrBlockC"},
+				"MapPublicIpOnLaunch" : "true",
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"PublicSubnet-C"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				],
+				"VpcId" : { "Ref" : "VPC" }
+			}
+		},
+		"AppSubnet2A" : {
+			"Type" : "AWS::EC2::Subnet",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"AvailabilityZone": {
+					"Fn::Join" :
+					[
+						"",
+						[
+							{
+								"Ref" : "AWS::Region"
+							},
+							"a"
+						]
+					]
+				},
+				"CidrBlock" : { "Ref" : "AppSubnetCidrBlockA"},
+				"MapPublicIpOnLaunch" : "false",
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"AppSubnet-A"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				],
+				"VpcId" : { "Ref" : "VPC" }
+			}
+		},
+		"AppSubnet2B" : {
+			"Type" : "AWS::EC2::Subnet",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"AvailabilityZone": {
+					"Fn::Join" :
+					[
+						"",
+						[
+							{
+								"Ref" : "AWS::Region"
+							},
+							"b"
+						]
+					]
+				},
+				"CidrBlock" : { "Ref" : "AppSubnetCidrBlockB"},
+				"MapPublicIpOnLaunch" : "false",
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"AppSubnet-B"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				],
+				"VpcId" : { "Ref" : "VPC" }
+			}
+		},
+		"AppSubnet2C" : {
+			"Type" : "AWS::EC2::Subnet",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"AvailabilityZone": {
+					"Fn::Join" :
+					[
+						"",
+						[
+							{
+								"Ref" : "AWS::Region"
+							},
+							"c"
+						]
+					]
+				},
+				"CidrBlock" : { "Ref" : "AppSubnetCidrBlockC"},
+				"MapPublicIpOnLaunch" : "false",
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"AppSubnet-C"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				],
+				"VpcId" : { "Ref" : "VPC" }
+			}
+		},
+		"WebSubnet2A" : {
+			"Type" : "AWS::EC2::Subnet",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"AvailabilityZone": {
+					"Fn::Join" :
+					[
+						"",
+						[
+							{
+								"Ref" : "AWS::Region"
+							},
+							"a"
+						]
+					]
+				},
+				"CidrBlock" : { "Ref" : "WebSubnetCidrBlockA"},
+				"MapPublicIpOnLaunch" : "false",
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"WebSubnet-A"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				],
+				"VpcId" : { "Ref" : "VPC" }
+			}
+		},
+		"WebSubnet2B" : {
+			"Type" : "AWS::EC2::Subnet",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"AvailabilityZone": {
+					"Fn::Join" :
+					[
+						"",
+						[
+							{
+								"Ref" : "AWS::Region"
+							},
+							"b"
+						]
+					]
+				},
+				"CidrBlock" : { "Ref" : "WebSubnetCidrBlockB"},
+				"MapPublicIpOnLaunch" : "false",
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"WebSubnet-B"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				],
+				"VpcId" : { "Ref" : "VPC" }
+			}
+		},
+		"WebSubnet2C" : {
+			"Type" : "AWS::EC2::Subnet",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"AvailabilityZone": {
+					"Fn::Join" :
+					[
+						"",
+						[
+							{
+								"Ref" : "AWS::Region"
+							},
+							"c"
+						]
+					]
+				},
+				"CidrBlock" : { "Ref" : "WebSubnetCidrBlockC"},
+				"MapPublicIpOnLaunch" : "false",
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"WebSubnet-C"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				],
+				"VpcId" : { "Ref" : "VPC" }
+			}
+		},
+		"DBSubnet2A" : {
+			"Type" : "AWS::EC2::Subnet",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"AvailabilityZone": {
+					"Fn::Join" :
+					[
+						"",
+						[
+							{
+								"Ref" : "AWS::Region"
+							},
+							"a"
+						]
+					]
+				},
+				"CidrBlock" : { "Ref" : "DbSubnetCidrBlockA"},
+				"MapPublicIpOnLaunch" : "false",
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"DBSubnet-A"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				],
+				"VpcId" : { "Ref" : "VPC" }
+			}
+		},
+		"DBSubnet2B" : {
+			"Type" : "AWS::EC2::Subnet",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"AvailabilityZone": {
+					"Fn::Join" :
+					[
+						"",
+						[
+							{
+								"Ref" : "AWS::Region"
+							},
+							"b"
+						]
+					]
+				},
+				"CidrBlock" : { "Ref" : "DbSubnetCidrBlockB"},
+				"MapPublicIpOnLaunch" : "false",
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"DBSubnet-B"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				],
+				"VpcId" : { "Ref" : "VPC" }
+			}
+		},
+		"DBSubnet2C" : {
+			"Type" : "AWS::EC2::Subnet",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"AvailabilityZone": {
+					"Fn::Join" :
+					[
+						"",
+						[
+							{
+								"Ref" : "AWS::Region"
+							},
+							"c"
+						]
+					]
+				},
+				"CidrBlock" : { "Ref" : "DbSubnetCidrBlockC"},
+				"MapPublicIpOnLaunch" : "false",
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"DBSubnet-C"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				],
+				"VpcId" : { "Ref" : "VPC" }
+			}
+		},
+		
+		
+		"IGW" : {
+			"Type" : "AWS::EC2::InternetGateway",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"IGW"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				]
+			}
+		},
+		"VPCIGWAttachment" : {
+			"Type" : "AWS::EC2::VPCGatewayAttachment",
+			"DependsOn" : ["VPC","IGW"],
+			"Properties" : {
+				"InternetGatewayId" : { "Ref" : "IGW" },
+				"VpcId" : { "Ref" : "VPC" }
+			}
+		},
+		"PublicRouteTable" : {
+			"Type" : "AWS::EC2::RouteTable",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"VpcId" : { "Ref" : "VPC" },
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"Public-RT"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				]
+			}
+		},
+		"PublicRTEntry" : {
+			"Type" : "AWS::EC2::Route",
+			"DependsOn" : ["VPCIGWAttachment"],
+			"Properties" : {
+				"DestinationCidrBlock" : "0.0.0.0/0",
+				"GatewayId" : { "Ref" : "IGW" },
+				"RouteTableId" : { "Ref" : "PublicRouteTable" }
+			}
+		},
+		"PublicRTSubnetAssociationA" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn" : ["PublicRouteTable","PublicSubnet2A"],
+			"Properties" : {
+				"RouteTableId" : { "Ref" : "PublicRouteTable"},
+				"SubnetId" : { "Ref" : "PublicSubnet2A" }
+			}
+		},
+		"PublicRTSubnetAssociationB" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn" : ["PublicRouteTable","PublicSubnet2B"],
+			"Properties" : {
+				"RouteTableId" : { "Ref" : "PublicRouteTable"},
+				"SubnetId" : { "Ref" : "PublicSubnet2B" }
+			}
+		},
+		"PublicRTSubnetAssociationC" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn" : ["PublicRouteTable","PublicSubnet2C"],
+			"Properties" : {
+				"RouteTableId" : { "Ref" : "PublicRouteTable"},
+				"SubnetId" : { "Ref" : "PublicSubnet2C" }
+			}
+		},
+		"EIP" : {
+			"Type" : "AWS::EC2::EIP",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"Domain" : { "Ref" : "VPC" }
+			}
+		},
+		"NATGW" : {
+			"Type" : "AWS::EC2::NatGateway",
+			"DependsOn" : ["VPC","PublicSubnet2C"],
+			"Properties" : {
+				"AllocationId" : {
+					"Fn::GetAtt" : ["EIP", "AllocationId"]
+				},
+				"SubnetId" : { "Ref" : "PublicSubnet2C" },
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"NAT"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				]
+			}
+		},
+		"PrivateRouteTable" : {
+			"Type" : "AWS::EC2::RouteTable",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"VpcId" : { "Ref" : "VPC" },
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"Private-RT"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				]
+			}
+		},
+		"PrivateRTEntry" : {
+			"Type" : "AWS::EC2::Route",
+			"DependsOn" : ["PrivateRouteTable","NATGW"],
+			"Properties" : {
+				"DestinationCidrBlock" : "0.0.0.0/0",
+				"NatGatewayId" : { "Ref" : "NATGW" },
+				"RouteTableId" : { "Ref" : "PrivateRouteTable" }
+			}
+		},
+		"PrivateRTSubnetAssociationServicesA" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn" : ["PrivateRouteTable","AppSubnet2A"],
+			"Properties" : {
+				"RouteTableId" : { "Ref" : "PrivateRouteTable"},
+				"SubnetId" : { "Ref" : "AppSubnet2A" }
+			}
+		},
+		"PrivateRTSubnetAssociationServicesB" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn" : ["PrivateRouteTable","AppSubnet2B"],
+			"Properties" : {
+				"RouteTableId" : { "Ref" : "PrivateRouteTable"},
+				"SubnetId" : { "Ref" : "AppSubnet2B" }
+			}
+		},
+		"PrivateRTSubnetAssociationServicesC" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn" : ["PrivateRouteTable","AppSubnet2C"],
+			"Properties" : {
+				"RouteTableId" : { "Ref" : "PrivateRouteTable"},
+				"SubnetId" : { "Ref" : "AppSubnet2C" }
+			}
+		},
+		"PrivateRTSubnetAssociationMeteorA" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn" : ["PrivateRouteTable","WebSubnet2A"],
+			"Properties" : {
+				"RouteTableId" : { "Ref" : "PrivateRouteTable"},
+				"SubnetId" : { "Ref" : "WebSubnet2A" }
+			}
+		},
+		"PrivateRTSubnetAssociationMeteorB" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn" : ["PrivateRouteTable","WebSubnet2B"],
+			"Properties" : {
+				"RouteTableId" : { "Ref" : "PrivateRouteTable"},
+				"SubnetId" : { "Ref" : "WebSubnet2B" }
+			}
+		},
+		"PrivateRTSubnetAssociationMeteorC" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn" : ["PrivateRouteTable","WebSubnet2C"],
+			"Properties" : {
+				"RouteTableId" : { "Ref" : "PrivateRouteTable"},
+				"SubnetId" : { "Ref" : "WebSubnet2C" }
+			}
+		},
+		"PrivateRTSubnetAssociationDBA" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn" : ["PrivateRouteTable","DBSubnet2A"],
+			"Properties" : {
+				"RouteTableId" : { "Ref" : "PrivateRouteTable"},
+				"SubnetId" : { "Ref" : "DBSubnet2A" }
+			}
+		},
+		"PrivateRTSubnetAssociationDBB" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn" : ["PrivateRouteTable","DBSubnet2B"],
+			"Properties" : {
+				"RouteTableId" : { "Ref" : "PrivateRouteTable"},
+				"SubnetId" : { "Ref" : "DBSubnet2B" }
+			}
+		},
+		"PrivateRTSubnetAssociationDBC" : {
+			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"DependsOn" : ["PrivateRouteTable","DBSubnet2C"],
+			"Properties" : {
+				"RouteTableId" : { "Ref" : "PrivateRouteTable"},
+				"SubnetId" : { "Ref" : "DBSubnet2C" }
+			}
+		},
+		
+  		"PublicNetworkAcl" : {
+			"Type" : "AWS::EC2::NetworkAcl",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"VpcId" : {"Ref" : "VPC"},
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"PublicNACL"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+   				]
+     		}
+		},
+		"NACLEntryPublicIB100" : 
+			{ 
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" :
+			{ 
+				"NetworkAclId" : {"Ref" : "PublicNetworkAcl"},
+				"RuleNumber" : "100", 
+				"Protocol" : "-1",
+				"Egress" : "false", 
+				"RuleAction" : "allow",
+				"CidrBlock" : "0.0.0.0/0", 
+				"PortRange" : { "From" : "0", "To" : "65535" }
+			} 
+			},
+		"NACLEntryPublicOB100" : 
+			{ 
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" :
+			{ 
+				"NetworkAclId" : {"Ref" : "PublicNetworkAcl"},
+				"RuleNumber" : "100", 
+				"Protocol" : "-1",
+				"Egress" : "true", 
+				"RuleAction" : "allow",
+				"CidrBlock" : "0.0.0.0/0", 
+				"PortRange" : { "From" : "0", "To" : "65535" }
+			} 
+			},
+		"PublicSubnetNetworkAclAssociation1" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"DependsOn" : ["PublicSubnet2A"],
+			"Properties" : {
+				"SubnetId" : { "Ref" : "PublicSubnet2A" },
+				"NetworkAclId" : { "Ref" : "PublicNetworkAcl" }
+			}
+		},
+		"PublicSubnetNetworkAclAssociation2" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"DependsOn" : ["PublicSubnet2B"],
+			"Properties" : {
+				"SubnetId" : { "Ref" : "PublicSubnet2B" },
+				"NetworkAclId" : { "Ref" : "PublicNetworkAcl" }
+			}
+		},
+		"PublicSubnetNetworkAclAssociation3" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"DependsOn" : ["PublicSubnet2C"],
+			"Properties" : {
+				"SubnetId" : { "Ref" : "PublicSubnet2C" },
+				"NetworkAclId" : { "Ref" : "PublicNetworkAcl" }
+			}
+		},
+  		"AppNetworkAcl" : {
+			"Type" : "AWS::EC2::NetworkAcl",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"VpcId" : {"Ref" : "VPC"},
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"AppNACL"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+   				]
+     		}
+		},
+		"NACLEntryAppIB100" : 
+			{ 
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" :
+			{ 
+				"NetworkAclId" : {"Ref" : "AppNetworkAcl"},
+				"RuleNumber" : "100", 
+				"Protocol" : "-1",
+				"Egress" : "false", 
+				"RuleAction" : "allow",
+				"CidrBlock" : "0.0.0.0/0", 
+				"PortRange" : { "From" : "0", "To" : "65535" }
+			} 
+			},
+		"NACLEntryAppOB100" : 
+			{ 
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" :
+			{ 
+				"NetworkAclId" : {"Ref" : "AppNetworkAcl"},
+				"RuleNumber" : "100", 
+				"Protocol" : "-1",
+				"Egress" : "true", 
+				"RuleAction" : "allow",
+				"CidrBlock" : "0.0.0.0/0", 
+				"PortRange" : { "From" : "0", "To" : "65535" }
+			} 
+			},
+			
+		
+		"AppSubnetNetworkAclAssociation1" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"DependsOn" : ["AppSubnet2A"],
+			"Properties" : {
+				"SubnetId" : { "Ref" : "AppSubnet2A" },
+				"NetworkAclId" : { "Ref" : "AppNetworkAcl" }
+			}
+		},
+		"AppSubnetNetworkAclAssociation2" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"DependsOn" : ["AppSubnet2B"],
+			"Properties" : {
+				"SubnetId" : { "Ref" : "AppSubnet2B" },
+				"NetworkAclId" : { "Ref" : "AppNetworkAcl" }
+			}
+		},
+		"AppSubnetNetworkAclAssociation3" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"DependsOn" : ["AppSubnet2C"],
+			"Properties" : {
+				"SubnetId" : { "Ref" : "AppSubnet2C" },
+				"NetworkAclId" : { "Ref" : "AppNetworkAcl" }
+			}
+		},
+  		"WebNetworkAcl" : {
+			"Type" : "AWS::EC2::NetworkAcl",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"VpcId" : {"Ref" : "VPC"},
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"WebNACL"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+   				]
+     		}
+		},
+		"NACLEntryWebIB100" : 
+			{ 
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" :
+			{ 
+				"NetworkAclId" : {"Ref" : "WebNetworkAcl"},
+				"RuleNumber" : "100", 
+				"Protocol" : "-1",
+				"Egress" : "false", 
+				"RuleAction" : "allow",
+				"CidrBlock" : "0.0.0.0/0", 
+				"PortRange" : { "From" : "0", "To" : "65535" }
+			} 
+			},
+		"NACLEntryWebOB100" : 
+			{ 
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" :
+			{ 
+				"NetworkAclId" : {"Ref" : "WebNetworkAcl"},
+				"RuleNumber" : "100", 
+				"Protocol" : "-1",
+				"Egress" : "true", 
+				"RuleAction" : "allow",
+				"CidrBlock" : "0.0.0.0/0", 
+				"PortRange" : { "From" : "0", "To" : "65535" }
+			} 
+			},
+		"WebSubnetNetworkAclAssociation1" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"DependsOn" : ["WebSubnet2A"],
+			"Properties" : {
+				"SubnetId" : { "Ref" : "WebSubnet2A" },
+				"NetworkAclId" : { "Ref" : "WebNetworkAcl" }
+			}
+		},
+		"WebSubnetNetworkAclAssociation2" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"DependsOn" : ["WebSubnet2B"],
+			"Properties" : {
+				"SubnetId" : { "Ref" : "WebSubnet2B" },
+				"NetworkAclId" : { "Ref" : "WebNetworkAcl" }
+			}
+		},
+		"WebSubnetNetworkAclAssociation3" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"DependsOn" : ["WebSubnet2C"],
+			"Properties" : {
+				"SubnetId" : { "Ref" : "WebSubnet2C" },
+				"NetworkAclId" : { "Ref" : "WebNetworkAcl" }
+			}
+		},
+  		"DBNetworkAcl" : {
+			"Type" : "AWS::EC2::NetworkAcl",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"VpcId" : {"Ref" : "VPC"},
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"DBNACL"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+   				]
+     		}
+		},
+		"NACLEntryDBIB100" : 
+			{ 
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" :
+			{ 
+				"NetworkAclId" : {"Ref" : "DBNetworkAcl"},
+				"RuleNumber" : "100", 
+				"Protocol" : "-1",
+				"Egress" : "false", 
+				"RuleAction" : "allow",
+				"CidrBlock" : "0.0.0.0/0", 
+				"PortRange" : { "From" : "0", "To" : "65535" }
+			} 
+			},
+		"NACLEntryDBOB100" : 
+			{ 
+			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Properties" :
+			{ 
+				"NetworkAclId" : {"Ref" : "DBNetworkAcl"},
+				"RuleNumber" : "100", 
+				"Protocol" : "-1",
+				"Egress" : "true", 
+				"RuleAction" : "allow",
+				"CidrBlock" : "0.0.0.0/0", 
+				"PortRange" : { "From" : "0", "To" : "65535" }
+			} 
+			},
+		
+		"DBSubnetNetworkAclAssociation1" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"DependsOn" : ["DBSubnet2A"],
+			"Properties" : {
+				"SubnetId" : { "Ref" : "DBSubnet2A" },
+				"NetworkAclId" : { "Ref" : "DBNetworkAcl" }
+			}
+		},
+		"DBSubnetNetworkAclAssociation2" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"DependsOn" : ["DBSubnet2B"],
+			"Properties" : {
+				"SubnetId" : { "Ref" : "DBSubnet2B" },
+				"NetworkAclId" : { "Ref" : "DBNetworkAcl" }
+			}
+		},
+		"DBSubnetNetworkAclAssociation3" : {
+			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"DependsOn" : ["DBSubnet2C"],
+			"Properties" : {
+				"SubnetId" : { "Ref" : "DBSubnet2C" },
+				"NetworkAclId" : { "Ref" : "DBNetworkAcl" }
+			}
+		},
+		"LBExternalSecurityGroup" : {
+			"Type" : "AWS::EC2::SecurityGroup",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"GroupDescription" : "SG for Load Balancer",
+				"VpcId" : { "Ref" : "VPC" },
+					"SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": "0.0.0.0/0"
+          },
+		  {
+            "IpProtocol": "tcp",
+            "FromPort": "443",
+            "ToPort": "443",
+            "CidrIp": "0.0.0.0/0"
+          }
+		  
+        ],
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"LBE-SG"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					}
+				]
+			}			
+		},
+		"WebSecurityGroup" : {
+			"Type" : "AWS::EC2::SecurityGroup",
+   			"DependsOn" : ["LBExternalSecurityGroup"],
+			"Properties" : {
+				"GroupDescription" : "SG for Web Servers",
+				"VpcId" : { "Ref" : "VPC" },
+				"SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+			"SourceSecurityGroupId" : { "Ref" : "LBExternalSecurityGroup"}
+            
+          },
+		  {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+			"SourceSecurityGroupId" : { "Ref" : "BastionSecurityGroup"}
+            
+          }
+		  
+        ],
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"Web-SG"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					}
+				]
+			}			
+		},
+		"LBInternalSecurityGroup" : {
+			"Type" : "AWS::EC2::SecurityGroup",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"GroupDescription" : "SG for Load Balancer",
+				"VpcId" : { "Ref" : "VPC" },
+					"SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "SourceSecurityGroupId": { "Ref" : "WebSecurityGroup" }
+          }
+		  
+        ],
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"LBI-SG"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					}
+				]
+			}			
+		},
+		"AppSecurityGroup" : {
+			"Type" : "AWS::EC2::SecurityGroup",
+			"DependsOn" : ["LBInternalSecurityGroup"],
+			"Properties" : {
+				"GroupDescription" : "SG for App Servers",
+				"VpcId" : { "Ref" : "VPC" },
+					"SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "SourceSecurityGroupId": { "Ref" : "LBInternalSecurityGroup" }
+          },
+		  {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "SourceSecurityGroupId": { "Ref" : "BastionSecurityGroup" }
+          }
+		  
+        ],
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"App-SG"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					}
+				]
+			}			
+		},
+		
+  		"DbSecurityGroup" : {
+			"Type" : "AWS::EC2::SecurityGroup",
+			"DependsOn" : ["WebSecurityGroup","AppSecurityGroup"],
+			"Properties" : {
+				"GroupDescription" : "SG for Database Servers",
+				"VpcId" : { "Ref" : "VPC" },
+				"SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "3306",
+            "ToPort": "3306",
+            "SourceSecurityGroupId": { "Ref" : "AppSecurityGroup" }
+          },
+		  {
+            "IpProtocol": "tcp",
+            "FromPort": "3306",
+            "ToPort": "3306",
+            "SourceSecurityGroupId": { "Ref" : "BastionSecurityGroup" }
+          }
+		  ],
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"DB-SG"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				]
+			}			
+		},
+  		"BastionSecurityGroup" : {
+			"Type" : "AWS::EC2::SecurityGroup",
+			"DependsOn" : ["VPC"],
+			"Properties" : {
+				"GroupDescription" : "SG for Bastion Host",
+				"SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": "219.65.95.10/32"
+          },
+		  {
+            "IpProtocol": "tcp",
+            "FromPort": "22",
+            "ToPort": "22",
+            "CidrIp": "183.87.61.58/32"
+          }
+		  ],
+				"VpcId" : { "Ref" : "VPC" },
+				"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"Bastion-SG"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				]
+			}			
+		},
+			"MountTargetSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId" : { "Ref" : "VPC" },
+        
+        "GroupDescription": "Security group for mount target",
+        "SecurityGroupIngress": [
+         
+		  {
+            "IpProtocol": "-1",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "SourceSecurityGroupId":{ "Ref" : "AppSecurityGroup"}
+          },
+		  {
+            "IpProtocol": "-1",
+            "FromPort": "0",
+            "ToPort": "65535",
+            "SourceSecurityGroupId": { "Ref" :"WebSecurityGroup"}
+          }
+        ],
+		"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"EFS-SG"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				]
+      }
+    },
+	"CacheSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId" : { "Ref" : "VPC" },
+       
+        "GroupDescription": "Security group for Cache target",
+        "SecurityGroupIngress": [
+         
+		  {
+            "IpProtocol": "tcp",
+            "FromPort": "6379",
+            "ToPort": "6379",
+            "SourceSecurityGroupId":{ "Ref" : "AppSecurityGroup"}
+          },
+		 {
+            "IpProtocol": "tcp",
+            "FromPort": "6379",
+            "ToPort": "6379",
+            "SourceSecurityGroupId":{ "Ref" : "WebSecurityGroup"}
+          },
+		  {
+            "IpProtocol": "tcp",
+            "FromPort": "6379",
+            "ToPort": "6379",
+            "SourceSecurityGroupId":{ "Ref" : "BastionSecurityGroup"}
+          },
+		  {
+            "IpProtocol": "tcp",
+            "FromPort": "6379",
+            "ToPort": "6379",
+            "SourceSecurityGroupId":{ "Ref" : "DbSecurityGroup"}
+          }
+        ],
+		"Tags" : [
+					{
+						"Key" : "Name",
+						"Value" : {
+							"Fn::Join" : [
+								"-", [
+									{ "Ref" : "ClientName" },
+									{ "Ref" : "EnvironmentName" },
+									"EC-SG"
+								]
+							]
+						}
+					},
+					{
+						"Key" : "Environment",
+						"Value" : { "Ref" : "EnvironmentName" }
+					},
+					{
+						"Key" : "CreatedBy",
+						"Value" : "BlazeClan"
+					},
+					{
+						"Key" : "Infra_Managed_By",
+						"Value" : "Blazeclan"
+					}
+				]
+      }
+    }
+	},
+ 	"Outputs" : {
+    	"VPCIDOP" : {
+			"Description" : "VPC ID being created",
+			"Value" : { "Ref" : "VPC" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-VPC" }
+			}
+		},
+		"VPCCIDROP" : {
+			"Description" : "CIDR of VPCbeing created",
+			"Value" : { "Ref" : "VPCCidrBlock" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-VPCCidrBlock" }
+			}
+		},
+		"PublicSubnet2AOP" : {
+			"Description" : "Subnet ID of Public Subnet 2A",
+			"Value" : { "Ref" : "PublicSubnet2A" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-PublicSubnet2A" }
+			}
+		},
+		"PublicSubnet2BOP" : {
+			"Description" : "Subnet ID of Public Subnet 2B",
+			"Value" : { "Ref" : "PublicSubnet2B" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-PublicSubnet2B" }
+			}
+		},
+		"PublicSubnet2COP" : {
+			"Description" : "Subnet ID of Public Subnet 2C",
+			"Value" : { "Ref" : "PublicSubnet2C" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-PublicSubnet2C" }
+			}
+		},
+		"AppSubnet2AOP" : {
+			"Description" : "Subnet ID of App Subnet 2A",
+			"Value" : { "Ref" : "AppSubnet2A" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-AppSubnet2A" }
+			}
+		},
+		"AppSubnet2BOP" : {
+			"Description" : "Subnet ID of App Subnet 2B",
+			"Value" : { "Ref" : "AppSubnet2B" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-AppSubnet2B" }
+			}
+		},
+		"AppSubnet2COP" : {
+			"Description" : "Subnet ID of App Subnet 2C",
+			"Value" : { "Ref" : "AppSubnet2C" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-AppSubnet2C" }
+			}
+		},
+		"WebSubnet2AOP" : {
+			"Description" : "Subnet ID of Web Subnet 2A",
+			"Value" : { "Ref" : "WebSubnet2A" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-WebSubnet2A" }
+			}
+		},
+		"WebSubnet2BOP" : {
+			"Description" : "Subnet ID of Web Subnet 2B",
+			"Value" : { "Ref" : "WebSubnet2B" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-WebSubnet2B" }
+			}
+		},
+		"WebSubnet2COP" : {
+			"Description" : "Subnet ID of Web Subnet 2C",
+			"Value" : { "Ref" : "WebSubnet2C" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-WebSubnet2C" }
+			}
+		},
+		"DBSubnet2AOP" : {
+			"Description" : "Subnet ID of DB Subnet 2A",
+			"Value" : { "Ref" : "DBSubnet2A" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-DBSubnet2A" }
+			}
+		},
+		"DBSubnet2BOP" : {
+			"Description" : "Subnet ID of DB Subnet 2B",
+			"Value" : { "Ref" : "DBSubnet2B" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-DBSubnet2B" }
+			}
+		},
+		"DBSubnetCOP" : {
+			"Description" : "Subnet IDs of DB Subnet 2C",
+			"Value" : { "Ref" : "DBSubnet2C" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-DBSubnet2C" }
+			}
+		},
+		
+		"PublicNACLOP" : {
+			"Description" : "ID of Public NACL",
+			"Value" : { "Ref" : "PublicNetworkAcl" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-PublicNetworkAcl" }
+			}
+		},
+		"AppNACLOP" : {
+			"Description" : "ID of Services NACL",
+			"Value" : { "Ref" : "AppNetworkAcl" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-AppNetworkAcl" }
+			}
+		},
+		"WebNACLOP" : {
+			"Description" : "ID of Meteor NACL",
+			"Value" : { "Ref" : "WebNetworkAcl" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-WebNetworkAcl" }
+			}
+		},
+		"DBNACLOP" : {
+			"Description" : "ID of DB NACL",
+			"Value" : { "Ref" : "DBNetworkAcl" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-DBNetworkAcl" }
+			}
+		},
+		"PublicSubnet2ACIDROP" : {
+			"Description" : "CIDR of PublicSubnet2A",
+			"Value" : { "Ref" : "PublicSubnetCidrBlockA" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-PublicSubnetCidrBlockA" }
+			}
+		},
+		"PublicSubnet2BCIDROP" : {
+			"Description" : "CIDR of PublicSubnet2B",
+			"Value" : { "Ref" : "PublicSubnetCidrBlockB" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-PublicSubnetCidrBlockB" }
+			}
+		},
+		"PublicSubnet2CCIDROP" : {
+			"Description" : "CIDR of PublicSubnet2C",
+			"Value" : { "Ref" : "PublicSubnetCidrBlockC" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-PublicSubnetCidrBlockC" }
+			}
+		},
+		"AppSubnet2ACIDROP" : {
+			"Description" : "CIDR of AppSubnet2A",
+			"Value" : { "Ref" : "AppSubnetCidrBlockA" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-AppSubnetCidrBlockA" }
+			}
+		},
+		"AppSubnet2BCIDROP" : {
+			"Description" : "CIDR of AppSubnet2B",
+			"Value" : { "Ref" : "AppSubnetCidrBlockB" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-AppSubnetCidrBlockB" }
+			}
+		},
+		"AppSubnet2CCIDROP" : {
+			"Description" : "CIDR of AppSubnet2C",
+			"Value" : { "Ref" : "AppSubnetCidrBlockC" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-AppSubnetCidrBlockC" }
+			}
+		},
+		"WebSubnet2ACIDROP" : {
+			"Description" : "CIDR of WebSubnet2A",
+			"Value" : { "Ref" : "WebSubnetCidrBlockA" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-WebSubnetCidrBlockA" }
+			}
+		},
+		"WebSubnet2BCIDROP" : {
+			"Description" : "CIDR of WebSubnet2B",
+			"Value" : { "Ref" : "WebSubnetCidrBlockB" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-WebSubnetCidrBlockB" }
+			}
+		},
+		"WebSubnet2CCIDROP" : {
+			"Description" : "CIDR of WebSubnet2C",
+			"Value" : { "Ref" : "WebSubnetCidrBlockC" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-WebSubnetCidrBlockC" }
+			}
+		},
+		"DBSubnet2ACIDROP" : {
+			"Description" : "CIDR of DbSubnet2A",
+			"Value" : { "Ref" : "DbSubnetCidrBlockA" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-DbSubnetCidrBlockA" }
+			}
+		},
+		"DBSubnet2BCIDROP" : {
+			"Description" : "CIDR of DbSubnet2B",
+			"Value" : { "Ref" : "DbSubnetCidrBlockB" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-DbSubnetCidrBlockB" }
+			}
+		},
+		"DBSubnet2CCIDROP" : {
+			"Description" : "CIDR of DbSubnet2C",
+			"Value" : { "Ref" : "DbSubnetCidrBlockC" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-DbSubnetCidrBlockC" }
+			}
+		},
+		
+		"LBInternalSecurityGroupOP" : {
+			"Description" : "LBInternalSecurityGroup ID",
+			"Value" : { "Ref" : "LBInternalSecurityGroup" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-LBInternalSecurityGroup" }
+			}
+		},
+		"LBExternalSecurityGroupOP" : {
+			"Description" : "LBExternalSecurityGroup ID",
+			"Value" : { "Ref" : "LBExternalSecurityGroup" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-LBExternalSecurityGroup" }
+			}
+		},
+		"AppSecurityGroupOP" : {
+			"Description" : "AppSecurityGroup ID",
+			"Value" : { "Ref" : "AppSecurityGroup" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-AppSecurityGroup" }
+			}
+		},
+		"WebSecurityGroupOP" : {
+			"Description" : "WebSecurityGroup ID",
+			"Value" : { "Ref" : "WebSecurityGroup" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-WebSecurityGroup" }
+			}
+		},
+		"DbSecurityGroupOP" : {
+			"Description" : "DbSecurityGroup ID",
+			"Value" : { "Ref" : "DbSecurityGroup" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-DbSecurityGroup" }
+			}
+		},
+		"BastionSecurityGroupOP" : {
+			"Description" : "BastionSecurityGroup ID",
+			"Value" : { "Ref" : "BastionSecurityGroup" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-BastionSecurityGroup" }
+			}
+		},
+		"MountTargetSecurityGroupOP" : {
+			"Description" : "MountTargetSecurityGroup ID",
+			"Value" : { "Ref" : "MountTargetSecurityGroup" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-MountTargetSecurityGroup" }
+			}
+		},
+		"CacheSecurityGroupOP" : {
+			"Description" : "CacheSecurityGroup ID",
+			"Value" : { "Ref" : "CacheSecurityGroup" },
+			"Export" : {
+				"Name" : { "Fn::Sub" : "${AWS::StackName}-CacheSecurityGroup" }
+			}
+		}
+		
+ 	}
+}
