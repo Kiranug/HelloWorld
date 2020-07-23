@@ -1,12 +1,31 @@
-@Library('dcube-library@master') _
+#!/usr/bin/env groovy
 
-pipeline {
-    agent any
-    stages {
-        stage('build') {
-            steps {
-                HelloWorld 'testing'
+@Library('shared-library@master') _ //master or whatever branch
+
+pipeline{
+
+      agent {
+                docker {
+                image 'maven'
+                args '-v $HOME/.m2:/root/.m2'
+                }
             }
-        }
-    }
+        
+        stages{
+
+              stage('maven build'){
+                  steps{
+                      script{
+		    	                sh "mvn clean install"
+                      	  }
+               	     }  
+                 }	
+                 
+                 stage ('Check logs') {
+                    steps {
+                        filterLogs ('WARNING', 1)
+                    }
+                }
+		
+           }	       	     	         
 }
