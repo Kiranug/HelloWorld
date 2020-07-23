@@ -1,3 +1,5 @@
+@Library('dcube-library@master') _
+
 pipeline {
     agent any
     stages {
