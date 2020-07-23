@@ -2,30 +2,13 @@
 
 @Library('jenkins-shared-library-framework@master') _ //master or whatever branch
 
-pipeline{
-
-      agent {
-                docker {
-                image 'maven'
-                args '-v $HOME/.m2:/root/.m2'
-                }
+pipeline {
+    agent any
+    stages {
+        stage('build') {
+            steps {
+                HelloWorld 'testing'
             }
-        
-        stages{
-
-              stage('maven build'){
-                  steps{
-                      script{
-		    	                sh "mvn clean install"
-                      	  }
-               	     }  
-                 }	
-                 
-                 stage ('Check logs') {
-                    steps {
-                        filterLogs ('WARNING', 1)
-                    }
-                }
-		
-           }	       	     	         
+        }
+    }
 }
