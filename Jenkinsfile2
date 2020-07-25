@@ -15,11 +15,11 @@ pipeline {
         stage('Some Stage') {
            steps {
                 echo "env.var1 = ${env.var1}"
-                echo ${env.var1}
-                echo ${env.var2}
+                echo "${env.var1}"
+                echo "${env.var2}"
                 
-                 echo ${env.varA}
-                echo ${env.varB}
+                 echo "${env.varA}"
+                echo "${env.varB}"
             }
         }
     }
