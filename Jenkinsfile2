@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Some Stage') {
            steps {
-                echo ${env.DB_URL}
+                echo "${env.DB_URL}"
               
             }
         }
