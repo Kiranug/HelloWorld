@@ -1,0 +1,25 @@
+@Library('jenkins-shared-library-framework@master') _ //master or whatever branch
+
+pipeline {
+
+    environment {
+        // initialize common vars
+        common_vars = my_vars.loadVars()
+    } // environment
+
+    stages {
+        stage('Some Stage') {
+            // ...
+        }
+    }
+
+    post {
+        always { 
+            script {
+                // Print environment variables
+                sh "env"
+            } // script
+        } // always
+    } // post
+
+} // pipeline
