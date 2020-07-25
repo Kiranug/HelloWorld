@@ -4,13 +4,22 @@ pipeline {
     agent any  
     environment {
         // initialize common vars
-        common_vars = my_vars.loadVars()
-    } // environment
+        common_vars = staging.loadVars()
+        var1 = staging.DB_URL()
+        var2 = staging.DB_URL2()
+        varA = var1 + "some_string"
+        varB = var2 + "some_other_string"
+     } // environment
 
     stages {
         stage('Some Stage') {
            steps {
-                echo "env.var1 = ${varMap.var1}"
+                echo "env.var1 = ${env.var1}"
+                echo ${env.var1}
+                echo ${env.var2}
+                
+                 echo ${env.varA}
+                echo ${env.varB}
             }
         }
     }
