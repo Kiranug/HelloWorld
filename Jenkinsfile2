@@ -1,7 +1,7 @@
 @Library('jenkins-shared-library-framework@master') _ //master or whatever branch
 
 pipeline {
-
+    agent any  
     environment {
         // initialize common vars
         common_vars = my_vars.loadVars()
