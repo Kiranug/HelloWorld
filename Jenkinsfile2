@@ -7,8 +7,8 @@ pipeline {
         common_vars = staging.loadVars()
         var1 = staging.DB_URL()
         var2 = staging.DB_URL2()
-        varA = var1 + "some_string"
-        varB = var2 + "some_other_string"
+        varA = "'${env.var1}' + 'some_string'"
+        varB = "'${env.var2}' + 'some_other_string'"
      } // environment
 
     stages {
