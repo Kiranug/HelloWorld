@@ -9,7 +9,9 @@ pipeline {
 
     stages {
         stage('Some Stage') {
-            // ...
+           steps {
+                echo "env.var1 = ${env.var1}"
+            }
         }
     }
 
