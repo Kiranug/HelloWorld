@@ -28,7 +28,7 @@ pipeline {
         always { 
             script {
                 // Print environment variables
-                sh "env"
+                echo "post action"
             } // script
         } // always
     } // post
