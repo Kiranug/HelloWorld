@@ -1,9 +1,8 @@
 @Library('jenkins-shared-library-framework@master') _ //master or whatever branch
+import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.DumperOptions
+import static org.yaml.snakeyaml.DumperOptions.FlowStyle.BLOCK
 
-def call() {
-  Map pipelineConfig = readYaml(file: "${WORKSPACE}/pipeline.yaml")
-  return pipelineConfig
-}
 pipeline {
     agent any  
     environment {
@@ -13,22 +12,19 @@ pipeline {
 
     stages {
         stage('Some Stage') {
-           steps {
-                echo "${env.common_vars}"
-              
-            }
-        }
+          def yaml = readYaml file: "pipeline.yml"
+          yaml.data.info = 'hello world!'
+          writeFile file:"pipeline.yml", text:yamlToString(yaml)
+          
+         
+    String yamlToString(Object data){
+    def opts = new DumperOptions()
+    opts.setDefaultFlowStyle(BLOCK)
+    return new Yaml(opts).dump(data)
+        }      
         
-               def p = pipelineConfig()
-
-        stage('Prerequistes'){
-            serviceName = sh (
-                    script: "echo ${p.SERVICE_NAME}|cut -d '-' -f 1",
-                    returnStdout: true
-                ).trim()
-        }
-    }
-
+      }
+        
     post {
         always { 
             script {
