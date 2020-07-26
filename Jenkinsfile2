@@ -5,11 +5,6 @@ import static org.yaml.snakeyaml.DumperOptions.FlowStyle.BLOCK
 
 pipeline {
     agent any  
-    environment {
-        // initialize common vars
-        common_vars = staging.loadVars()
-        } // environment
-
     stages {
         stage('Some Stage') {
           def yaml = readYaml file: "pipeline.yml"
@@ -23,15 +18,6 @@ pipeline {
     return new Yaml(opts).dump(data)
         }      
         
-      }
-        
-    post {
-        always { 
-            script {
-                // Print environment variables
-                sh "env"
-            } // script
-        } // always
-    } // post
+     }
 
 } // pipeline
