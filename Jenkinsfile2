@@ -1,5 +1,9 @@
 @Library('jenkins-shared-library-framework@master') _ //master or whatever branch
 
+def call() {
+  Map pipelineConfig = readYaml(file: "${WORKSPACE}/pipeline.yaml")
+  return pipelineConfig
+}
 pipeline {
     agent any  
     environment {
@@ -13,6 +17,15 @@ pipeline {
                 echo "${env.common_vars}"
               
             }
+        }
+        
+               def p = pipelineConfig()
+
+        stage('Prerequistes'){
+            serviceName = sh (
+                    script: "echo ${p.SERVICE_NAME}|cut -d '-' -f 1",
+                    returnStdout: true
+                ).trim()
         }
     }
 
