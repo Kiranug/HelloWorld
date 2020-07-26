@@ -11,7 +11,7 @@ pipeline {
         }
 
          def p = pipelineConfig()
-       }
+  
         stages('Prerequistes'){
             serviceName = sh (
                     script: "echo ${p.SERVICE_NAME}|cut -d '-' -f 1",
